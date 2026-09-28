@@ -1,0 +1,25 @@
+name: echurch_desktop
+description: Aplicativo de gestão de igreja (E-Church)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.13.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: 1.4.0
+  provider: ^6.1.5
+  go_router: ^18.0.1
+  dio: ^5.11.1
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+
+flutter:
+  uses-material-design: true
