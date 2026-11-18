@@ -32,66 +32,44 @@ Este documento define as diretrizes tecnológicas, arquiteturais e a estrutura d
 
 4. **Responsabilidades:** A `View` apenas exibe o estado e capta ações. A regra de negócio da tela e o controle de estado residem no `ViewModel`. O acesso a dados reside no `Repository`.
 
-## 📂 Estrutura de Pastas (Feature-First)
+## 📂 Estrutura de Pastas (por camada → feature)
 
-A organização segue o padrão Feature-First acoplado ao MVVM, mantendo o código modular e escalável.
+A organização segue o guia oficial de arquitetura do Flutter (MVVM em camadas `ui/`, `domain/`, `data/`),
+conforme definido em `../eChurchWorkspace/FLUTTER_GUIDE.md`. **Leia o guia antes de criar arquivos.**
 
 ```
 lib/
 │
-├── main.dart                       # Ponto de entrada da aplicação
+├── main.dart                       # Ponto de entrada: runApp(ApplicationBindings(child: MainApp()))
 │
-├── app/                            # Configurações centrais do app
-│   ├── app.dart                    # MaterialApp e configuração de Providers raiz
-│   ├── router/
-│   │   └── app_router.dart         # Configuração do go_router e guards de autenticação
-│   └── dependencies/
-│       └── app_dependencies.dart   # Central de injeção base (Providers globais)
+├── config/
+│   ├── application_bindings.dart   # MultiProvider global (services, repositórios, notifiers, GoRouter)
+│   └── environment.dart            # BASE_URL via --dart-define (a criar)
 │
-├── core/                           # Recursos compartilhados entre todas as features
-│   ├── theme/                      # Configurações do material_ui, cores e tipografia
-│   ├── network/                    # Configurações do Dio, interceptors e tratamento de erro
-│   ├── utils/                      # Helpers, formatadores (CPF, data, telefone) e extensões
-│   └── widgets/                    # Componentes de UI globais (Inputs, botões, modais padronizados)
+├── core/                           # Infra genérica sem regra de negócio (a criar, copiar do guia)
+│   ├── command.dart / result.dart / view_model_initializable.dart
+│   ├── auth/auth_session_notifier.dart
+│   ├── exceptions/app_exception.dart
+│   └── logging/
 │
-├── data/                           # Camada de Dados Global
-│   ├── repositories/               # Implementação dos repositórios globais
-│   └── services/                   # Clientes de API, WebSockets e persistência local
+├── data/                           # (a criar) repositórios + services (api retrofit, local storage, mappers)
 │
-├── domain/                         # Camada de Domínio Global
-│   └── models/                     # Entidades base geradas pelo freezed/json_serializable
+├── domain/
+│   ├── models/<grupo>/             # Entidades puras (ex.: dashboard/quick_stat.dart)
+│   └── use_cases/                  # Só quando orquestra 2+ repositórios
 │
-└── features/                       # Módulos de negócio da aplicação
-    │
-    ├── auth/                       # Autenticação e controle de sessão
-    │   ├── presentation/
-    │   │   ├── viewmodels/         # AuthViewModel
-    │   │   ├── views/              # LoginView
-    │   │   └── widgets/
-    │   └── data/                   # (Opcional) Repositórios específicos desta feature
-    │
-    ├── dashboard/                  # Tela principal (Menu lateral + Conteúdo)
-    │   └── presentation/
-    │       ├── viewmodels/         # DashboardViewModel
-    │       ├── views/              # DashboardMainLayout, DashboardOverviewView
-    │       └── widgets/            # AppSidebarWidget, TopHeaderWidget, StatisticCardWidget
-    │
-    ├── members/                    # Gestão de Membros
-    │   └── presentation/
-    │       ├── viewmodels/         # MembersListViewModel, MemberFormViewModel
-    │       ├── views/              # MembersListView, MemberFormView
-    │       └── widgets/            # MemberDataTableWidget, MemberFilterWidget
-    │
-    ├── children/                   # Gestão de Crianças
-    │   └── presentation/
-    │       ├── viewmodels/
-    │       ├── views/
-    │       └── widgets/
-    │
-    └── prayer_requests/            # Gestão de Pedidos de Oração
-        └── presentation/
-            ├── viewmodels/
-            ├── views/
-            └── widgets/
-
+├── routing/
+│   ├── routes.dart                 # Constantes de path (Routes.login, Routes.dashboard...)
+│   └── router.dart                 # GoRouter com Bindings por rota
+│
+└── ui/
+    ├── core/
+    │   ├── theme/                  # app_colors, app_theme, theme.dart (barrel)
+    │   └── share/                  # Widgets compartilhados entre features
+    ├── main/                       # Shell desktop: MainScreen, sidebar, top_header, MainBindings
+    ├── auth/login/                 # LoginBindings, LoginScreen, LoginViewModel, widgets/
+    ├── dashboard/                  # DashboardScreen, DashboardViewModel, widgets/
+    ├── members/                    # (futuro) list/, detail/, form/
+    ├── children/                   # (futuro)
+    └── prayer_requests/            # (futuro)
 ```

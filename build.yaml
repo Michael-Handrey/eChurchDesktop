@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # A API Spring (e-Church) usa camelCase nos DTOs (accessToken, firstAccess...).
+          field_rename: none
+          explicit_to_json: true
