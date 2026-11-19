@@ -6,8 +6,9 @@ import 'package:window_manager/window_manager.dart';
 /// login (e troca de senha) em janela centralizada; o sistema, maximizado.
 final class AppWindow._() {
   static const title = 'Minha Igreja - Gestão de Membros';
-  static const loginSize = Size(1100, 720);
+  /// Login, splash e troca de senha abrem no menor tamanho permitido.
   static const minimumSize = Size(960, 640);
+  static const loginSize = minimumSize;
 
   static final _log = AppLogger('AppWindow');
 
