@@ -7,17 +7,23 @@ import 'package:window_manager/window_manager.dart';
 /// redimensionar nem maximizar); o sistema, maximizado e livre.
 final class AppWindow._() {
   static const title = 'Minha Igreja - Gestão de Membros';
-  /// Login, splash e troca de senha abrem no menor tamanho permitido.
-  static const minimumSize = Size(960, 640);
-  static const loginSize = minimumSize;
+
+  /// Splash, login e troca de senha: tamanho fixo (mínimo = máximo).
+  static const loginSize = Size(960, 640);
+
+  /// Menor tamanho do sistema quando o usuário restaura a janela maximizada.
+  static const minimumSize = loginSize;
 
   static final _log = AppLogger('AppWindow');
+
+  /// Limite máximo original da janela (sem limite), devolvido ao entrar no sistema.
+  static Size? _originalMaximumSize;
 
   /// Chamar antes do `runApp`: o runner do Windows só mostra a janela no
   /// primeiro frame, então ela já aparece centralizada, sem pular de lugar.
   static void initialize() => _run('configurar', (window) {
     window.title = title;
-    window.minimumSize = minimumSize.toNative();
+    _originalMaximumSize = window.maximumSize.toSize();
     _lockAtLoginSize(window);
   });
 
@@ -28,6 +34,8 @@ final class AppWindow._() {
 
   static void showMain() => _run('maximizar', (window) {
     // Libera antes de maximizar: com a janela travada o Windows recusaria.
+    if (_originalMaximumSize case final original?) window.maximumSize = original.toNative();
+    window.minimumSize = minimumSize.toNative();
     window.isResizable = true;
     window.isMaximizable = true;
     if (!window.isMaximized) window.maximize();
@@ -36,8 +44,11 @@ final class AppWindow._() {
   /// Tamanho e posição primeiro; depois trava (alguns sistemas ignoram
   /// mudança de tamanho em janela não redimensionável).
   static void _lockAtLoginSize(Window window) {
+    final size = loginSize.toNative();
     window.isResizable = true;
-    window.setSize(loginSize.toNative(), false);
+    window.minimumSize = size;
+    window.maximumSize = size;
+    window.setSize(size, false);
     window.center();
     window.isResizable = false;
     window.isMaximizable = false;
