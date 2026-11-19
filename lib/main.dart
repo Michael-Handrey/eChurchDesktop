@@ -4,7 +4,7 @@ import 'package:echurch_desktop/core/logging/app_logger.dart';
 import 'package:echurch_desktop/core/logging/log_output.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/core/window/app_window.dart';
-import 'package:echurch_desktop/ui/core/window/session_window_sizer.dart';
+import 'package:echurch_desktop/ui/core/window/route_window_sizer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
@@ -27,7 +27,7 @@ class const MainApp({super.key}) extends StatelessWidget {
       theme: AppTheme.light(),
       routerConfig: context.read<GoRouter>(),
       debugShowCheckedModeBanner: false,
-      builder: (context, child) => SessionWindowSizer(session: context.read(), child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => RouteWindowSizer(router: context.read(), child: child ?? const SizedBox.shrink()),
     );
   }
 }

@@ -47,6 +47,9 @@ void main() {
         child: MaterialApp.router(routerConfig: appRouter),
       ),
     );
+    // Passa pela splash: animação + tempo de leitura.
+    await tester.pump(const Duration(milliseconds: 1500));
+    await tester.pump(const Duration(milliseconds: 1200));
     await tester.pumpAndSettle();
 
     expect(session.mustChangePassword, isTrue);

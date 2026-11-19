@@ -1,4 +1,6 @@
 final class Routes._() {
+  /// Abertura do app e transição após login/troca de senha.
+  static const splash = '/splash';
   static const login = '/login';
   static const dashboard = '/dashboard';
 
@@ -6,4 +8,7 @@ final class Routes._() {
   static const firstAccess = '/first-access';
 
   static const public = {login};
+
+  /// Telas em janela centralizada no tamanho do login; as demais abrem maximizadas.
+  static const compactWindow = {splash, login, firstAccess};
 }
