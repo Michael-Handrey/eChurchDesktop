@@ -6,14 +6,14 @@ import 'package:echurch_desktop/data/repositories/auth/auth_repository.dart';
 import 'package:echurch_desktop/data/services/local/secure_storage_service.dart';
 import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
 
-AuthSession sessionOf(String tag, {Duration accessIn = const Duration(minutes: 15)}) {
+AuthSession sessionOf(String tag, {Duration accessIn = const Duration(minutes: 15), bool firstAccess = false}) {
   final now = DateTime.now();
   return AuthSession(
     accessToken: 'access-$tag',
     accessTokenExpiresAt: now.add(accessIn),
     refreshToken: 'refresh-$tag',
     refreshTokenExpiresAt: now.add(const Duration(days: 14)),
-    user: const AuthSessionUser(login: 'maria', name: 'Maria Silva', firstAccess: false, churchId: 1),
+    user: AuthSessionUser(login: 'maria', name: 'Maria Silva', firstAccess: firstAccess, churchId: 1),
   );
 }
 

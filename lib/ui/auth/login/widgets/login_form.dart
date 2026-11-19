@@ -1,3 +1,5 @@
+import 'package:echurch_desktop/ui/core/share/app_error_banner.dart';
+import 'package:echurch_desktop/ui/core/share/app_password_field.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -8,6 +10,7 @@ class const LoginFormWidget({
   required final bool rememberMe,
   required final VoidCallback onToggleRememberMe,
   required final bool isLoading,
+  required final VoidCallback onForgotPassword,
   final String? errorMessage,
   final VoidCallback? onSubmit,
 }) extends StatelessWidget {
@@ -27,12 +30,12 @@ class const LoginFormWidget({
                 const SizedBox(height: 32),
                 LoginUserInputWidget(controller: loginController, enabled: !isLoading),
                 const SizedBox(height: 20),
-                LoginPasswordInputWidget(controller: passwordController, enabled: !isLoading, onSubmitted: onSubmit),
+                AppPasswordField(controller: passwordController, enabled: !isLoading, onSubmitted: onSubmit),
                 const SizedBox(height: 16),
-                LoginRememberForgotRowWidget(rememberMe: rememberMe, onToggleRememberMe: isLoading ? null : onToggleRememberMe),
+                LoginRememberForgotRowWidget(rememberMe: rememberMe, onToggleRememberMe: isLoading ? null : onToggleRememberMe, onForgotPassword: onForgotPassword),
                 if (errorMessage case final message?) ...[
                   const SizedBox(height: 16),
-                  LoginErrorBannerWidget(message: message),
+                  AppErrorBanner(message: message),
                 ],
                 const SizedBox(height: 28),
                 LoginSubmitButtonWidget(isLoading: isLoading, onPressed: onSubmit),
@@ -76,35 +79,6 @@ class const LoginHeaderWidget({super.key}) extends StatelessWidget {
   }
 }
 
-/// Rótulo + caixa com o visual padrão dos campos da tela de login.
-class const _LoginFieldShell({required final String label, required final Widget child}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: .start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 13.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border, width: 1.2),
-          ),
-          child: child,
-        ),
-      ],
-    );
-  }
-}
-
 class const LoginUserInputWidget({
   super.key,
   required final TextEditingController controller,
@@ -112,7 +86,7 @@ class const LoginUserInputWidget({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return _LoginFieldShell(
+    return AppFieldShell(
       label: 'Usuário',
       child: TextField(
         controller: controller,
@@ -134,66 +108,10 @@ class const LoginUserInputWidget({
   }
 }
 
-class const LoginPasswordInputWidget({
-  super.key,
-  required final TextEditingController controller,
-  required final bool enabled,
-  final VoidCallback? onSubmitted,
-}) extends StatefulWidget {
-  @override
-  State<LoginPasswordInputWidget> createState() => _LoginPasswordInputWidgetState();
-}
-
-class _LoginPasswordInputWidgetState extends State<LoginPasswordInputWidget> {
-  // Estado efêmero de UI: só esta caixa precisa saber.
-  final _obscured = ValueNotifier(true);
-
-  @override
-  void dispose() {
-    _obscured.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _LoginFieldShell(
-      label: 'Senha de Acesso',
-      child: ValueListenableBuilder(
-        valueListenable: _obscured,
-        builder: (context, obscured, _) => TextField(
-          controller: widget.controller,
-          enabled: widget.enabled,
-          obscureText: obscured,
-          textInputAction: .done,
-          autofillHints: const [AutofillHints.password],
-          onSubmitted: (_) => widget.onSubmitted?.call(),
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-          decoration: InputDecoration(
-            isDense: true,
-            hintText: 'Digite sua senha',
-            hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13.5),
-            prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textSecondary, size: 20),
-            suffixIcon: IconButton(
-              onPressed: () => _obscured.value = !obscured,
-              tooltip: obscured ? 'Mostrar senha' : 'Ocultar senha',
-              icon: Icon(
-                obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                color: AppColors.textSecondary,
-                size: 20,
-              ),
-            ),
-            border: InputBorder.none,
-            contentPadding: const .symmetric(horizontal: 14, vertical: 14),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class const LoginRememberForgotRowWidget({
   super.key,
   required final bool rememberMe,
+  required final VoidCallback onForgotPassword,
   final VoidCallback? onToggleRememberMe,
 }) extends StatelessWidget {
   @override
@@ -226,7 +144,7 @@ class const LoginRememberForgotRowWidget({
           ),
         ),
         TextButton(
-          onPressed: () {},
+          onPressed: onForgotPassword,
           style: TextButton.styleFrom(padding: const .symmetric(horizontal: 4, vertical: 2)),
           child: const Text(
             'Esqueceu a senha?',
@@ -234,33 +152,6 @@ class const LoginRememberForgotRowWidget({
           ),
         ),
       ],
-    );
-  }
-}
-
-class const LoginErrorBannerWidget({super.key, required final String message}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      liveRegion: true,
-      child: Container(
-        padding: const .symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.error.withValues(alpha: .35)),
-        ),
-        child: Row(
-          crossAxisAlignment: .start,
-          spacing: 10,
-          children: [
-            const Icon(Icons.error_outline, color: AppColors.error, size: 20),
-            Expanded(
-              child: Text(message, style: const TextStyle(color: AppColors.error, fontSize: 13, height: 1.4)),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

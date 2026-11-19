@@ -49,6 +49,23 @@ class _LoginScreenState extends State<LoginScreen> {
     widget.viewModel.login.execute((login: login, password: password));
   }
 
+  /// Sem recuperação automática por enquanto (por e-mail está no ROADMAP):
+  /// o administrador gera uma senha provisória, trocada no primeiro acesso.
+  Future<void> _showForgotPassword() => showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      icon: const Icon(Icons.lock_reset_outlined, color: AppColors.primary),
+      title: const Text('Esqueceu a senha?'),
+      content: const Text(
+        'Fale com o administrador da igreja. Ele vai gerar uma senha provisória para você.\n\n'
+        'No próximo acesso, entre com ela e cadastre uma nova senha.',
+      ),
+      actions: [
+        FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Entendi')),
+      ],
+    ),
+  );
+
   @override
   void dispose() {
     widget.viewModel.login.removeListener(_onLoginResult);
@@ -82,6 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   passwordController: _password,
                   rememberMe: widget.viewModel.rememberMe,
                   onToggleRememberMe: widget.viewModel.toggleRememberMe,
+                  onForgotPassword: _showForgotPassword,
                   isLoading: widget.viewModel.login.running,
                   errorMessage: _errorMessage.value,
                   onSubmit: filled ? _submit : null,

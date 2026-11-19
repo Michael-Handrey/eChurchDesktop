@@ -16,6 +16,9 @@ final class const UnauthorizedException({super.cause, super.stackTrace}) extends
 
 final class const ForbiddenException({super.cause, super.stackTrace}) extends AppException;
 
+/// Backend exige a troca da senha provisória antes de liberar a rota (403 `FIRST_ACCESS_REQUIRED`).
+final class const FirstAccessRequiredException({super.cause, super.stackTrace}) extends AppException;
+
 final class const NotFoundException({super.cause, super.stackTrace}) extends AppException;
 
 final class const ServerException({super.cause, super.stackTrace}) extends AppException;

@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:echurch_desktop/config/environment.dart';
 import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
+import 'package:echurch_desktop/data/repositories/account/account_repository.dart';
+import 'package:echurch_desktop/data/repositories/account/account_repository_remote.dart';
 import 'package:echurch_desktop/data/repositories/auth/auth_repository.dart';
 import 'package:echurch_desktop/data/repositories/auth/auth_repository_remote.dart';
 import 'package:echurch_desktop/data/repositories/auth_session/auth_session_repository.dart';
 import 'package:echurch_desktop/data/repositories/auth_session/auth_session_repository_local.dart';
+import 'package:echurch_desktop/data/services/api/account_api.dart';
 import 'package:echurch_desktop/data/services/api/auth_api.dart';
 import 'package:echurch_desktop/data/services/api/interceptors/auth_interceptor.dart';
 import 'package:echurch_desktop/data/services/local/secure_storage_service.dart';
@@ -37,7 +40,9 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
         // que usa esta API (evita ciclo e renovação dentro de renovação).
         Provider(create: (context) => AuthApi(Dio(_apiOptions()))),
         Provider<AuthRepository>(create: (context) => AuthRepositoryRemote(authApi: context.read())),
-        Provider(create: (context) => AuthRefreshSessionUseCase(authRepository: context.read(), authSessionRepository: context.read())),
+        Provider(
+          create: (context) => AuthRefreshSessionUseCase(authRepository: context.read(), authSessionRepository: context.read()),
+        ),
 
         Provider(
           create: (context) => AuthInterceptor(
@@ -51,8 +56,15 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
         // Dio das demais APIs (membros, igrejas...): Bearer automático e renovação no 401.
         Provider(create: (context) => Dio(_apiOptions())..interceptors.add(context.read<AuthInterceptor>())),
 
-        Provider(create: (context) => AuthLogoutUseCase(authRepository: context.read(), authSessionRepository: context.read())),
-        Provider(create: (context) => AuthRestoreSessionUseCase(authSessionRepository: context.read(), authRefreshSessionUseCase: context.read())),
+        Provider(create: (context) => AccountApi(context.read())),
+        Provider<AccountRepository>(create: (context) => AccountRepositoryRemote(accountApi: context.read())),
+
+        Provider(
+          create: (context) => AuthLogoutUseCase(authRepository: context.read(), authSessionRepository: context.read()),
+        ),
+        Provider(
+          create: (context) => AuthRestoreSessionUseCase(authSessionRepository: context.read(), authRefreshSessionUseCase: context.read()),
+        ),
 
         ChangeNotifierProvider(
           lazy: false,

@@ -23,6 +23,9 @@ class AuthSessionNotifier({
   AuthSessionUser? get user => _user;
   bool get isSignedIn => _user != null;
 
+  /// Senha provisória: o router só deixa ir para a troca de senha.
+  bool get mustChangePassword => _user?.firstAccess ?? false;
+
   this {
     unawaited(_restore());
 
@@ -71,6 +74,13 @@ class AuthSessionNotifier({
     _user = user;
     _restored = true;
     _log.info('Sessão iniciada');
+    notifyListeners();
+  }
+
+  /// Senha trocada e sessão renovada: [user] já vem sem a marca de primeiro acesso.
+  void passwordChanged(AuthSessionUser user) {
+    _user = user;
+    _log.info('Senha alterada');
     notifyListeners();
   }
 
