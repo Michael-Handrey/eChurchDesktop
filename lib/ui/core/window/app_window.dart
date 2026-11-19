@@ -1,57 +1,77 @@
 import 'package:echurch_desktop/core/logging/app_logger.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nativeapi/nativeapi.dart' show Display, DisplayManager;
 import 'package:window_manager/window_manager.dart';
 
-/// Tamanho e posição da janela do Windows conforme a fase da sessão:
-/// splash, login e troca de senha em janela fixa e centralizada (sem
-/// redimensionar nem maximizar); o sistema, maximizado e livre.
+/// Tamanho e posição da janela do Windows conforme a fase da sessão.
+/// A janela é sempre fixa (sem redimensionar nem maximizar):
+/// - splash, login e troca de senha: [loginSize], centralizada;
+/// - sistema: ocupa a área útil do monitor (sem cobrir a barra de tarefas)
+///   e não pode ser movida.
+///
+/// O sistema não usa o estado "maximizado" do Windows: uma janela maximizada
+/// pode ser restaurada com duplo clique na barra de título.
 final class AppWindow._() {
   static const title = 'Minha Igreja - Gestão de Membros';
 
   /// Splash, login e troca de senha: tamanho fixo (mínimo = máximo).
   static const loginSize = Size(960, 640);
 
-  /// Menor tamanho do sistema quando o usuário restaura a janela maximizada.
-  static const minimumSize = loginSize;
+  /// Usado só durante a troca de limites, para o mínimo nunca passar do máximo.
+  static const _anySize = Size(1, 1);
 
   static final _log = AppLogger('AppWindow');
-
-  /// Limite máximo original da janela (sem limite), devolvido ao entrar no sistema.
-  static Size? _originalMaximumSize;
 
   /// Chamar antes do `runApp`: o runner do Windows só mostra a janela no
   /// primeiro frame, então ela já aparece centralizada, sem pular de lugar.
   static void initialize() => _run('configurar', (window) {
     window.title = title;
-    _originalMaximumSize = window.maximumSize.toSize();
-    _lockAtLoginSize(window);
+    _showLoginOn(window);
   });
 
-  static void showLogin() => _run('voltar ao tamanho do login', (window) {
+  static void showLogin() => _run('voltar ao tamanho do login', _showLoginOn);
+
+  static void showMain() => _run('ocupar a tela', (window) {
+    final area = _workAreaOf(window);
+    if (area == null) {
+      _log.warning('Área útil do monitor indisponível; mantendo o tamanho atual');
+      return;
+    }
+
+    _fix(window, area.size, () => window.bounds = area.toNative());
+    window.isMovable = false;
+  });
+
+  static void _showLoginOn(Window window) {
     if (window.isMaximized) window.unmaximize();
-    _lockAtLoginSize(window);
-  });
+    window.isMovable = true;
+    _fix(window, loginSize, window.center);
+  }
 
-  static void showMain() => _run('maximizar', (window) {
-    // Libera antes de maximizar: com a janela travada o Windows recusaria.
-    if (_originalMaximumSize case final original?) window.maximumSize = original.toNative();
-    window.minimumSize = minimumSize.toNative();
-    window.isResizable = true;
-    window.isMaximizable = true;
-    if (!window.isMaximized) window.maximize();
-  });
-
-  /// Tamanho e posição primeiro; depois trava (alguns sistemas ignoram
+  /// Libera, aplica tamanho/posição e trava de novo (alguns sistemas ignoram
   /// mudança de tamanho em janela não redimensionável).
-  static void _lockAtLoginSize(Window window) {
-    final size = loginSize.toNative();
+  static void _fix(Window window, Size size, VoidCallback place) {
+    final native = size.toNative();
     window.isResizable = true;
-    window.minimumSize = size;
-    window.maximumSize = size;
-    window.setSize(size, false);
-    window.center();
+    window.minimumSize = _anySize.toNative();
+    window.maximumSize = native;
+    window.minimumSize = native;
+    window.setSize(native, false);
+    place();
     window.isResizable = false;
     window.isMaximizable = false;
+  }
+
+  /// Área útil do monitor onde a janela está (ou do principal).
+  static Rect? _workAreaOf(Window window) {
+    final center = window.bounds.toRect().center;
+
+    final current = DisplayManager.instance.getAll().cast<Display?>().firstWhere(
+      (display) => display!.workArea.toRect().contains(center),
+      orElse: DisplayManager.instance.getPrimary,
+    );
+
+    return current?.workArea.toRect();
   }
 
   /// Falha ao mexer na janela não pode derrubar o app: só registra.

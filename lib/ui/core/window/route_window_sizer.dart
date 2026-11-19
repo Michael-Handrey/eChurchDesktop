@@ -4,9 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 /// Ajusta a janela conforme a tela aberta: splash, login e troca de senha em
-/// janela centralizada ([Routes.compactWindow]); as demais telas, maximizadas.
-/// Seguir a rota (e não a sessão) faz a janela maximizar só quando o painel
-/// aparece, depois da splash.
+/// janela fixa e centralizada ([Routes.compactWindow]); as demais telas ocupam
+/// a área útil do monitor. Seguir a rota (e não a sessão) faz a janela crescer
+/// só quando o painel aparece, depois da splash.
 class const RouteWindowSizer({
   super.key,
   required final GoRouter router,
@@ -18,7 +18,7 @@ class const RouteWindowSizer({
 
 class _RouteWindowSizerState extends State<RouteWindowSizer> {
   /// A janela começa no tamanho do login (`AppWindow.initialize`).
-  var _maximized = false;
+  var _fullScreen = false;
 
   GoRouterDelegate get _delegate => widget.router.routerDelegate;
 
@@ -33,11 +33,11 @@ class _RouteWindowSizerState extends State<RouteWindowSizer> {
     final path = _delegate.currentConfiguration.uri.path;
     if (path.isEmpty) return;
 
-    final maximized = !Routes.compactWindow.contains(path);
-    if (maximized == _maximized) return;
+    final fullScreen = !Routes.compactWindow.contains(path);
+    if (fullScreen == _fullScreen) return;
 
-    _maximized = maximized;
-    maximized ? AppWindow.showMain() : AppWindow.showLogin();
+    _fullScreen = fullScreen;
+    fullScreen ? AppWindow.showMain() : AppWindow.showLogin();
   }
 
   @override

@@ -20,6 +20,7 @@ dependencies:
   logging: ^1.3.0
   flutter_secure_storage: ^11.2.0
   window_manager: ^0.7.0
+  nativeapi: ^0.6.1
 
 
 dev_dependencies:
