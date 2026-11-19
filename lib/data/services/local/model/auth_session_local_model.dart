@@ -5,7 +5,8 @@ part 'auth_session_local_model.g.dart';
 
 /// Metadados da sessão salvos no storage. Os tokens ficam em chaves próprias
 /// ([StorageKeys.accessToken] / [StorageKeys.refreshToken]) para o interceptor ler direto.
-@JsonSerializable()
+/// `checked: true`: JSON inválido vira [CheckedFromJsonException] (tratável) em vez de `TypeError`.
+@JsonSerializable(checked: true)
 class const AuthSessionLocalModel({
   required final int accessTokenExpiresAt,
   required final int refreshTokenExpiresAt,

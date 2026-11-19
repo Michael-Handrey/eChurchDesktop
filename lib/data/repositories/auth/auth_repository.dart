@@ -8,6 +8,6 @@ abstract interface class AuthRepository {
   /// Troca o refresh token por um novo par de tokens (o refresh anterior é revogado no backend).
   Future<Result<AuthSession>> refresh({required String refreshToken});
 
-  /// Revoga o access token atual e o [refreshToken] no backend.
-  Future<Result<void>> logout({required String refreshToken});
+  /// Revoga no backend o [refreshToken] e, se ainda válido, o [accessToken] (só este dispositivo).
+  Future<Result<void>> logout({required String refreshToken, String? accessToken});
 }

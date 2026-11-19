@@ -9,11 +9,18 @@ import 'package:echurch_desktop/data/services/api/auth_api.dart';
 import 'package:echurch_desktop/data/services/api/interceptors/auth_interceptor.dart';
 import 'package:echurch_desktop/data/services/local/secure_storage_service.dart';
 import 'package:echurch_desktop/domain/use_cases/auth/auth_logout_use_case.dart';
+import 'package:echurch_desktop/domain/use_cases/auth/auth_refresh_session_use_case.dart';
 import 'package:echurch_desktop/domain/use_cases/auth/auth_restore_session_use_case.dart';
 import 'package:echurch_desktop/routing/router.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
+BaseOptions _apiOptions() => BaseOptions(
+  baseUrl: Environment.baseUrl,
+  connectTimeout: const Duration(seconds: 10),
+  receiveTimeout: const Duration(seconds: 20),
+);
 
 /// Dependências globais do app (serviços, repositórios, notifiers e router).
 /// ViewModels de tela ficam nos `*Bindings` de cada feature em `ui/`.
@@ -24,28 +31,28 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
     return MultiProvider(
       providers: [
         Provider(create: (context) => SecureStorageService()),
+        Provider<AuthSessionRepository>(create: (context) => AuthSessionRepositoryLocal(storage: context.read())),
+
+        // Dio próprio da AuthApi, sem AuthInterceptor: o interceptor depende do refresh,
+        // que usa esta API (evita ciclo e renovação dentro de renovação).
+        Provider(create: (context) => AuthApi(Dio(_apiOptions()))),
+        Provider<AuthRepository>(create: (context) => AuthRepositoryRemote(authApi: context.read())),
+        Provider(create: (context) => AuthRefreshSessionUseCase(authRepository: context.read(), authSessionRepository: context.read())),
 
         Provider(
-          create: (context) => AuthInterceptor(storage: context.read()),
+          create: (context) => AuthInterceptor(
+            sessions: context.read(),
+            refreshSession: context.read<AuthRefreshSessionUseCase>().refresh,
+            retryClient: Dio(_apiOptions()),
+          ),
           dispose: (context, interceptor) => interceptor.dispose(),
         ),
 
-        Provider(
-          create: (context) => Dio(
-            BaseOptions(
-              baseUrl: Environment.baseUrl,
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 20),
-            ),
-          )..interceptors.add(context.read<AuthInterceptor>()),
-        ),
-
-        Provider(create: (context) => AuthApi(context.read())),
-        Provider<AuthRepository>(create: (context) => AuthRepositoryRemote(authApi: context.read())),
-        Provider<AuthSessionRepository>(create: (context) => AuthSessionRepositoryLocal(storage: context.read())),
+        // Dio das demais APIs (membros, igrejas...): Bearer automático e renovação no 401.
+        Provider(create: (context) => Dio(_apiOptions())..interceptors.add(context.read<AuthInterceptor>())),
 
         Provider(create: (context) => AuthLogoutUseCase(authRepository: context.read(), authSessionRepository: context.read())),
-        Provider(create: (context) => AuthRestoreSessionUseCase(authRepository: context.read(), authSessionRepository: context.read())),
+        Provider(create: (context) => AuthRestoreSessionUseCase(authSessionRepository: context.read(), authRefreshSessionUseCase: context.read())),
 
         ChangeNotifierProvider(
           lazy: false,

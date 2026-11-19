@@ -35,9 +35,12 @@ class AuthRepositoryRemote({required final AuthApi _authApi}) implements AuthRep
   }
 
   @override
-  Future<Result<void>> logout({required String refreshToken}) async {
+  Future<Result<void>> logout({required String refreshToken, String? accessToken}) async {
     try {
-      await _authApi.logout(RefreshTokenRequest(refreshToken: refreshToken));
+      await _authApi.logout(
+        RefreshTokenRequest(refreshToken: refreshToken),
+        authorization: accessToken == null ? null : 'Bearer $accessToken',
+      );
       return Result.done;
     } on DioException catch (e, st) {
       return Result.error(e.toAppException(st));

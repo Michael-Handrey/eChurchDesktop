@@ -1,18 +1,18 @@
-import 'package:echurch_desktop/core/exceptions/app_exception.dart';
 import 'package:echurch_desktop/core/logging/app_logger.dart';
 import 'package:echurch_desktop/core/result.dart';
-import 'package:echurch_desktop/data/repositories/auth/auth_repository.dart';
 import 'package:echurch_desktop/data/repositories/auth_session/auth_session_repository.dart';
 import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
+import 'package:echurch_desktop/domain/use_cases/auth/auth_refresh_session_use_case.dart';
 
 /// Restaura a sessão guardada na abertura do app:
-/// - sem "Lembrar-me" → descarta;
+/// - sem "Lembrar-me" → descarta (só existe no disco se gravada por versão antiga);
+/// - refresh token expirado → descarta;
 /// - access token válido → usa;
-/// - access expirado e refresh válido → renova no backend;
-/// - ambos expirados / refresh recusado → descarta.
+/// - access expirado → renova; backend recusou → descarta;
+/// - backend fora do ar → mantém o usuário; o `AuthInterceptor` renova na primeira chamada à API.
 class AuthRestoreSessionUseCase({
-  required final AuthRepository _authRepository,
   required final AuthSessionRepository _authSessionRepository,
+  required final AuthRefreshSessionUseCase _authRefreshSessionUseCase,
 }) {
   final _log = AppLogger('AuthRestoreSessionUseCase');
 
@@ -31,29 +31,21 @@ class AuthRestoreSessionUseCase({
 
         if (session.isAccessTokenValid) return Result.ok(session.user);
 
-        return _refresh(session, remember: remember);
+        return _refresh(session);
     }
   }
 
-  Future<Result<AuthSessionUser?>> _refresh(AuthSession session, {required bool remember}) async {
-    final refreshed = await _authRepository.refresh(refreshToken: session.refreshToken);
+  Future<Result<AuthSessionUser?>> _refresh(AuthSession session) async {
+    switch (await _authRefreshSessionUseCase.refresh()) {
+      case Ok<AuthSession?>(value: final renewed?):
+        return Result.ok(renewed.user);
 
-    switch (refreshed) {
-      case Ok<AuthSession>(value: final newSession):
-        _log.info('Sessão renovada com o refresh token');
-        final saved = await _authSessionRepository.save(newSession, remember: remember);
-        return switch (saved) {
-          Ok<void>() => Result.ok(newSession.user),
-          Error<void>(:final error) => Result.error(error),
-        };
-
-      // Backend fora do ar: mantém o usuário; as chamadas à API tratam a falha.
-      case Error<AuthSession>(error: NetworkException()):
-        return Result.ok(session.user);
-
-      case Error<AuthSession>(:final error):
-        _log.warning('Refresh token recusado', error: error);
+      case Ok<AuthSession?>():
         return _discard();
+
+      case Error<AuthSession?>(:final error):
+        _log.warning('Não foi possível renovar a sessão agora; mantendo o usuário', error: error, stackTrace: error.stackTrace);
+        return Result.ok(session.user);
     }
   }
 

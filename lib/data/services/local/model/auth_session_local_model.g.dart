@@ -8,15 +8,24 @@ part of 'auth_session_local_model.dart';
 
 AuthSessionLocalModel _$AuthSessionLocalModelFromJson(
   Map<String, dynamic> json,
-) => AuthSessionLocalModel(
-  accessTokenExpiresAt: (json['accessTokenExpiresAt'] as num).toInt(),
-  refreshTokenExpiresAt: (json['refreshTokenExpiresAt'] as num).toInt(),
-  remember: json['remember'] as bool,
-  login: json['login'] as String,
-  name: json['name'] as String,
-  firstAccess: json['firstAccess'] as bool,
-  churchId: (json['churchId'] as num?)?.toInt(),
-);
+) => $checkedCreate('AuthSessionLocalModel', json, ($checkedConvert) {
+  final val = AuthSessionLocalModel(
+    accessTokenExpiresAt: $checkedConvert(
+      'accessTokenExpiresAt',
+      (v) => (v as num).toInt(),
+    ),
+    refreshTokenExpiresAt: $checkedConvert(
+      'refreshTokenExpiresAt',
+      (v) => (v as num).toInt(),
+    ),
+    remember: $checkedConvert('remember', (v) => v as bool),
+    login: $checkedConvert('login', (v) => v as String),
+    name: $checkedConvert('name', (v) => v as String),
+    firstAccess: $checkedConvert('firstAccess', (v) => v as bool),
+    churchId: $checkedConvert('churchId', (v) => (v as num?)?.toInt()),
+  );
+  return val;
+});
 
 Map<String, dynamic> _$AuthSessionLocalModelToJson(
   AuthSessionLocalModel instance,

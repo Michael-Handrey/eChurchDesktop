@@ -106,10 +106,15 @@ class _AuthApi implements AuthApi {
   }
 
   @override
-  Future<void> logout(RefreshTokenRequest request) async {
-    final _extra = <String, dynamic>{};
+  Future<void> logout(
+    RefreshTokenRequest request, {
+    String? authorization,
+  }) async {
+    final _extra = <String, dynamic>{'publicRoute': true};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{r'Authorization': authorization};
+    _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(request.toJson());
     final _options = _setStreamType<void>(

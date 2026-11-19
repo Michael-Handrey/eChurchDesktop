@@ -25,6 +25,9 @@ abstract class AuthApi {
   @GET('/v1/auth/me')
   Future<UserMeApiModel> me({@Header('Authorization') String? authorization});
 
+  /// Público no backend: revoga o [request] (refresh) mesmo com o access token expirado.
+  /// [authorization] opcional: se o access token ainda for válido, também é revogado.
   @POST('/v1/auth/logout')
-  Future<void> logout(@Body() RefreshTokenRequest request);
+  @Extra(AuthInterceptor.publicRoute)
+  Future<void> logout(@Body() RefreshTokenRequest request, {@Header('Authorization') String? authorization});
 }

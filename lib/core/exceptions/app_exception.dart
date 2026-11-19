@@ -22,6 +22,13 @@ final class const ServerException({super.cause, super.stackTrace}) extends AppEx
 
 final class const StorageException({super.cause, super.stackTrace}) extends AppException;
 
+/// Backend bloqueou temporariamente por excesso de senhas incorretas (HTTP 429).
+final class const TooManyAttemptsException(
+  final String message, {
+  super.cause,
+  super.stackTrace,
+}) extends AppException;
+
 final class const ValidationException(
   final String message, {
   super.cause,

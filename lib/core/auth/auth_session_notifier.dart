@@ -35,20 +35,27 @@ class AuthSessionNotifier({
   }
 
   Future<void> _restore() async {
-    final restored = await _authRestoreSessionUseCase.restore();
+    try {
+      final restored = await _authRestoreSessionUseCase.restore();
 
-    if (_restored) return;
+      if (_restored) return;
 
-    switch (restored) {
-      case Ok(:final value):
-        _user = value;
-        _log.info(value == null ? 'Sem sessão guardada' : 'Sessão restaurada');
-      case Error(:final error):
-        _log.error('Falha ao ler a sessão guardada', error: error);
+      switch (restored) {
+        case Ok(:final value):
+          _user = value;
+          _log.info(value == null ? 'Sem sessão guardada' : 'Sessão restaurada');
+        case Error(:final error):
+          _log.error('Falha ao ler a sessão guardada', error: error, stackTrace: error.stackTrace);
+      }
+    } on Object catch (e, st) {
+      // Qualquer falha inesperada não pode deixar o app preso no carregamento: vai para o login.
+      _log.error('Erro inesperado ao restaurar a sessão', error: e, stackTrace: st);
+    } finally {
+      if (!_restored) {
+        _restored = true;
+        notifyListeners();
+      }
     }
-
-    _restored = true;
-    notifyListeners();
   }
 
   String get initials {
