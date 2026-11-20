@@ -1,5 +1,6 @@
 import 'package:echurch_desktop/domain/models/dashboard/quick_stat.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
+import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -23,15 +24,15 @@ class QuickStatsSectionWidget extends StatelessWidget {
         children: [
           const QuickStatsHeaderWidget(),
           const SizedBox(height: 18),
-          Row(
-            children: viewModel.stats.map((stat) {
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: StatCounterCardWidget(stat: stat),
-                ),
-              );
-            }).toList(),
+          // Cards nas mesmas bordas do banner abaixo; crescem para ocupar a altura do painel.
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 14,
+              children: [
+                for (final stat in viewModel.stats) Expanded(child: StatCounterCardWidget(stat: stat)),
+              ],
+            ),
           ),
           const SizedBox(height: 18),
           const MissionBannerWidget(),
@@ -46,45 +47,48 @@ class QuickStatsHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Estatísticas Rápidas',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
+    return SizedBox(
+      height: DashboardLowerPanelsWidget.headerHeight,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Estatísticas Rápidas',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border, width: 1),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(
-                Icons.calendar_today_outlined,
-                color: AppColors.textSecondary,
-                size: 14,
-              ),
-              SizedBox(width: 6),
-              Text(
-                'Hoje',
-                style: TextStyle(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border, width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(
+                  Icons.calendar_today_outlined,
                   color: AppColors.textSecondary,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w500,
+                  size: 14,
                 ),
-              ),
-            ],
+                SizedBox(width: 6),
+                Text(
+                  'Hoje',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -111,6 +115,12 @@ class StatCounterCardWidget extends StatelessWidget {
         iconBgColor = AppColors.membersBg;
         cardBgColor = AppColors.membersBg.withValues(alpha: 0.35);
         break;
+      case QuickStatType.birthdays:
+        icon = Icons.cake_outlined;
+        iconColor = AppColors.birthdayIcon;
+        iconBgColor = AppColors.birthdayBg;
+        cardBgColor = AppColors.birthdayBg.withValues(alpha: 0.35);
+        break;
       case QuickStatType.children:
         icon = Icons.face_outlined;
         iconColor = AppColors.childrenIcon;
@@ -132,8 +142,10 @@ class StatCounterCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderSubtle, width: 1),
       ),
+      // Ícone no alto, número e rótulo embaixo: os três cards ficam alinhados mesmo esticados.
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
             width: 38,
@@ -147,22 +159,36 @@ class StatCounterCardWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Text(
-            '${stat.count}',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            stat.label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${stat.count}',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Espaço de duas linhas em todos os cards: rótulo longo ("Aniversariantes do Dia")
+              // quebra sem desalinhar os números entre os cards.
+              SizedBox(
+                height: 32,
+                child: Text(
+                  stat.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

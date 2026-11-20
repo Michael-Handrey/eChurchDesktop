@@ -71,6 +71,10 @@ abstract final class AppColors {
   static const prayerIcon = Color(0xFF7E38B7);
   static const prayerBg = Color(0xFFF4EBFA);
 
+  // Aniversariantes
+  static const birthdayIcon = Color(0xFFE8590C);
+  static const birthdayBg = Color(0xFFFFF0E6);
+
   // ---------------------------------------------------------------------------
   // 6. Feedback & Estados do Sistema
   // ---------------------------------------------------------------------------

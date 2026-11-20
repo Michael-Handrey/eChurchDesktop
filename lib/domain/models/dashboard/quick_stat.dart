@@ -1,5 +1,6 @@
 enum QuickStatType {
   members,
+  birthdays,
   children,
   prayers,
 }

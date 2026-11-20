@@ -30,24 +30,31 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
+/// Estatísticas e últimos registros lado a lado, com a mesma altura.
 class DashboardLowerPanelsWidget extends StatelessWidget {
   const DashboardLowerPanelsWidget({super.key});
 
+  /// Altura do cabeçalho dos dois painéis: títulos e conteúdos começam na mesma linha.
+  static const headerHeight = 32.0;
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Expanded(
-          flex: 7,
-          child: QuickStatsSectionWidget(),
-        ),
-        SizedBox(width: 20),
-        Expanded(
-          flex: 5,
-          child: RecentActivitySectionWidget(),
-        ),
-      ],
+    // IntrinsicHeight + stretch: o painel mais baixo cresce até a altura do outro.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: const [
+          Expanded(
+            flex: 7,
+            child: QuickStatsSectionWidget(),
+          ),
+          SizedBox(width: 20),
+          Expanded(
+            flex: 5,
+            child: RecentActivitySectionWidget(),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -18,6 +18,12 @@ class DashboardViewModel extends ChangeNotifier {
       count: 248,
       type: QuickStatType.members,
     ),
+    // Fixo por enquanto: virá da API (membros ativos da igreja em uso que fazem aniversário hoje).
+    QuickStat(
+      label: 'Aniversariantes do Dia',
+      count: 3,
+      type: QuickStatType.birthdays,
+    ),
     QuickStat(
       label: 'Crianças Cadastradas',
       count: 72,

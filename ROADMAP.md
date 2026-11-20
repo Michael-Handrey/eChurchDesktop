@@ -84,7 +84,7 @@ O que pode fazer em cada igreja alcançada vem dos grupos (ex.: secretaria da se
 Hoje a troca ainda não muda nenhum dado na tela, porque nenhuma tela lista dados por igreja.
 
 - **Membros:** a tela vai mostrar os membros da igreja escolhida no seletor.
-- **Painel inicial:** os números e atividades do dashboard (hoje fixos) vão carregar os dados da igreja escolhida.
+- **Painel inicial:** os números e atividades do dashboard (hoje fixos) vão carregar os dados da igreja escolhida: membros ativos, **aniversariantes do dia** (membros ativos que fazem aniversário hoje), crianças, pedidos de oração e últimos registros (FEAT-6 no TASKS do backend).
 
 ### Grupos futuros
 

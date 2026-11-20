@@ -1,5 +1,6 @@
 import 'package:echurch_desktop/domain/models/dashboard/recent_activity.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
+import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -22,22 +23,13 @@ class RecentActivitySectionWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const RecentActivityHeaderWidget(),
-          const SizedBox(height: 14),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: viewModel.activities.length,
-            separatorBuilder: (context, index) => const Divider(
-              color: AppColors.borderSubtle,
-              height: 14,
-              thickness: 1,
-            ),
-            itemBuilder: (context, index) {
-              return RecentActivityItemWidget(
-                activity: viewModel.activities[index],
-              );
-            },
-          ),
+          const SizedBox(height: 18),
+          // Coluna (e não ListView): poucos itens, e o painel precisa informar a altura natural
+          // para o IntrinsicHeight que iguala os dois painéis.
+          for (final (index, activity) in viewModel.activities.indexed) ...[
+            if (index > 0) const Divider(color: AppColors.borderSubtle, height: 14, thickness: 1),
+            RecentActivityItemWidget(activity: activity),
+          ],
         ],
       ),
     );
@@ -49,44 +41,47 @@ class RecentActivityHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Últimos Registros',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(6),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
-                  'Ver todos',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward,
-                  color: AppColors.textSecondary,
-                  size: 14,
-                ),
-              ],
+    return SizedBox(
+      height: DashboardLowerPanelsWidget.headerHeight,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Últimos Registros',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ),
-      ],
+          InkWell(
+            onTap: () {},
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'Ver todos',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: AppColors.textSecondary,
+                    size: 14,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
