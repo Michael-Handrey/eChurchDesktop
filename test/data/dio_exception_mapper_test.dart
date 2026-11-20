@@ -34,4 +34,10 @@ void main() {
 
     expect((error as ValidationException).message, 'A nova senha precisa ter um número.');
   });
+
+  test('400 do GlobalExceptionHandler ("message") também traz a mensagem do backend', () {
+    final error = map(400, {'status': 400, 'error': 'BAD_REQUEST', 'message': 'Para alterar a sua própria senha, use a troca de senha.'});
+
+    expect((error as ValidationException).message, 'Para alterar a sua própria senha, use a troca de senha.');
+  });
 }

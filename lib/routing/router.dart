@@ -38,7 +38,7 @@ GoRouter router(AuthSessionNotifier session) => GoRouter(
     GoRoute(
       path: Routes.login,
       builder: (_, _) => LoginBindings(
-        screenBuilder: (context) => LoginScreen(viewModel: context.read(), session: context.read()),
+        screenBuilder: (context) => LoginScreen(viewModel: context.read()),
       ),
     ),
     GoRoute(

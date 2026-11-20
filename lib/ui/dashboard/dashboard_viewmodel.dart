@@ -3,8 +3,13 @@ import 'package:echurch_desktop/domain/models/dashboard/recent_activity.dart';
 import 'package:flutter/widgets.dart';
 
 class DashboardViewModel extends ChangeNotifier {
-  String _selectedNavItem = 'membros';
-  bool _isSecretariaExpanded = true;
+  /// Item da sidebar que abre a tela de usuários (só administrador).
+  static const usersNavItem = 'usuarios';
+
+  String _selectedNavItem = 'inicio';
+  bool _isSecretariaExpanded = false;
+  bool _isSettingsExpanded = false;
+  bool _isReportsExpanded = false;
   String _searchQuery = '';
 
   final List<QuickStat> _stats = const [
@@ -60,6 +65,8 @@ class DashboardViewModel extends ChangeNotifier {
 
   String get selectedNavItem => _selectedNavItem;
   bool get isSecretariaExpanded => _isSecretariaExpanded;
+  bool get isSettingsExpanded => _isSettingsExpanded;
+  bool get isReportsExpanded => _isReportsExpanded;
   String get searchQuery => _searchQuery;
   List<QuickStat> get stats => _stats;
   List<RecentActivity> get activities => _activities;
@@ -73,6 +80,16 @@ class DashboardViewModel extends ChangeNotifier {
 
   void toggleSecretaria() {
     _isSecretariaExpanded = !_isSecretariaExpanded;
+    notifyListeners();
+  }
+
+  void toggleReports() {
+    _isReportsExpanded = !_isReportsExpanded;
+    notifyListeners();
+  }
+
+  void toggleSettings() {
+    _isSettingsExpanded = !_isSettingsExpanded;
     notifyListeners();
   }
 

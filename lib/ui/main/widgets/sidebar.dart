@@ -26,7 +26,7 @@ class AppSidebarWidget extends StatelessWidget {
           SidebarBrandWidget(),
           SizedBox(height: 16),
           Expanded(child: SidebarNavListWidget()),
-          SidebarUserProfileWidget(),
+          SidebarLogoutWidget(),
         ],
       ),
     );
@@ -92,6 +92,7 @@ class SidebarNavListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<DashboardViewModel>();
+    final isAdmin = context.watch<AuthSessionNotifier>().user?.isAdmin ?? false;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -166,6 +167,39 @@ class SidebarNavListWidget extends StatelessWidget {
           isSelected: false,
           onTap: () {},
         ),
+        const SizedBox(height: 4),
+        SidebarAccordionHeaderWidget(
+          icon: Icons.bar_chart_outlined,
+          label: 'Relatórios & Documentos',
+          isExpanded: viewModel.isReportsExpanded,
+          onTap: viewModel.toggleReports,
+        ),
+        if (viewModel.isReportsExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
+            child: Column(
+              children: [
+                SidebarSubmenuItemWidget(
+                  icon: Icons.summarize_outlined,
+                  label: 'Relatórios',
+                  isSelected: viewModel.selectedNavItem == 'relatorios',
+                  onTap: () => viewModel.selectNavItem('relatorios'),
+                ),
+                SidebarSubmenuItemWidget(
+                  icon: Icons.badge_outlined,
+                  label: 'Credenciais',
+                  isSelected: viewModel.selectedNavItem == 'credenciais',
+                  onTap: () => viewModel.selectNavItem('credenciais'),
+                ),
+                SidebarSubmenuItemWidget(
+                  icon: Icons.description_outlined,
+                  label: 'Documentos',
+                  isSelected: viewModel.selectedNavItem == 'documentos',
+                  onTap: () => viewModel.selectNavItem('documentos'),
+                ),
+              ],
+            ),
+          ),
         const SizedBox(height: 8),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 14),
@@ -176,18 +210,34 @@ class SidebarNavListWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        SidebarNavItemWidget(
-          icon: Icons.bar_chart_outlined,
-          label: 'Relatórios & Documentos',
-          isSelected: viewModel.selectedNavItem == 'relatorios',
-          onTap: () => viewModel.selectNavItem('relatorios'),
-        ),
-        SidebarNavItemWidget(
+        SidebarAccordionHeaderWidget(
           icon: Icons.settings_outlined,
           label: 'Configurações',
-          isSelected: viewModel.selectedNavItem == 'configuracoes',
-          onTap: () => viewModel.selectNavItem('configuracoes'),
+          isExpanded: viewModel.isSettingsExpanded,
+          onTap: viewModel.toggleSettings,
         ),
+        if (viewModel.isSettingsExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
+            child: Column(
+              children: [
+                SidebarSubmenuItemWidget(
+                  icon: Icons.tune_outlined,
+                  label: 'Geral',
+                  isSelected: viewModel.selectedNavItem == 'configuracoes',
+                  onTap: () => viewModel.selectNavItem('configuracoes'),
+                ),
+                // Só administrador: a API também recusa (403) para os demais.
+                if (isAdmin)
+                  SidebarSubmenuItemWidget(
+                    icon: Icons.manage_accounts_outlined,
+                    label: 'Usuários e acesso',
+                    isSelected: viewModel.selectedNavItem == DashboardViewModel.usersNavItem,
+                    onTap: () => viewModel.selectNavItem(DashboardViewModel.usersNavItem),
+                  ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -374,87 +424,25 @@ class SidebarSubmenuItemWidget extends StatelessWidget {
   }
 }
 
-class SidebarUserProfileWidget extends StatelessWidget {
-  const SidebarUserProfileWidget({super.key});
+/// "Sair" fixo no rodapé do menu, separado da navegação.
+class SidebarLogoutWidget extends StatelessWidget {
+  const SidebarLogoutWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final session = context.read<AuthSessionNotifier>();
-
-    return ListenableBuilder(
-      listenable: session,
-      builder: (context, _) => _profile(session),
-    );
-  }
-
-  Widget _profile(AuthSessionNotifier session) {
-    final user = session.user;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: AppColors.sidebarHover, width: 1),
-        ),
-      ),
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.surface,
-            child: session.initials.isEmpty
-                ? const Icon(
-                    Icons.person,
-                    color: AppColors.primary,
-                    size: 22,
-                  )
-                : Text(
-                    session.initials,
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  user?.name ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textOnPrimary,
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  user?.login ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textOnPrimaryMuted,
-                    fontSize: 11.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
+          const Divider(color: AppColors.sidebarHover, height: 1, thickness: 1),
+          const SizedBox(height: 8),
+          SidebarNavItemWidget(
+            icon: Icons.logout_outlined,
+            label: 'Sair',
+            isSelected: false,
             // O redirect do router leva ao login quando a sessão é encerrada.
-            onPressed: session.logout,
-            tooltip: 'Sair',
-            icon: const Icon(
-              Icons.logout_outlined,
-              color: AppColors.textOnPrimaryMuted,
-              size: 20,
-            ),
+            onTap: context.read<AuthSessionNotifier>().logout,
           ),
         ],
       ),

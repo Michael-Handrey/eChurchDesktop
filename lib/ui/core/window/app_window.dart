@@ -42,6 +42,17 @@ final class AppWindow._() {
     window.isMovable = false;
   });
 
+  /// Monitor mudou (resolução, escala, barra de tarefas, monitor ligado/desligado)
+  /// com o painel aberto: reaplica a área útil, só se ela for diferente da atual.
+  static void refreshMain() => _run('reajustar à nova área útil', (window) {
+    final area = _workAreaOf(window);
+    if (area == null || window.bounds.toRect() == area) return;
+
+    _log.info('Área útil do monitor mudou; reajustando a janela');
+    _fix(window, area.size, () => window.bounds = area.toNative());
+    window.isMovable = false;
+  });
+
   static void _showLoginOn(Window window) {
     if (window.isMaximized) window.unmaximize();
     window.isMovable = true;

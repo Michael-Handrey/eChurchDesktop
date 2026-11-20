@@ -33,7 +33,10 @@ Future<AuthSessionNotifier> _sessionWith(AuthSession? stored) async {
 GoRouter _router(AuthSessionNotifier session) => GoRouter(
   initialLocation: Routes.splash,
   routes: [
-    GoRoute(path: Routes.splash, builder: (_, _) => SplashScreen(session: session)),
+    GoRoute(
+      path: Routes.splash,
+      builder: (_, _) => SplashScreen(session: session),
+    ),
     for (final path in [Routes.login, Routes.dashboard, Routes.firstAccess]) GoRoute(path: path, builder: (_, _) => Text('tela $path')),
   ],
 );

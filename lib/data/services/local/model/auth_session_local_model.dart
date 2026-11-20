@@ -15,11 +15,14 @@ class const AuthSessionLocalModel({
   required final String name,
   required final bool firstAccess,
   final int? churchId,
+
+  /// Opcional: sessões gravadas por versões anteriores não têm papéis (o próximo `/me` preenche).
+  final List<String>? roles,
 }) extends Equatable {
   factory AuthSessionLocalModel.fromJson(Map<String, dynamic> json) => _$AuthSessionLocalModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$AuthSessionLocalModelToJson(this);
 
   @override
-  List<Object?> get props => [accessTokenExpiresAt, refreshTokenExpiresAt, remember, login, name, firstAccess, churchId];
+  List<Object?> get props => [accessTokenExpiresAt, refreshTokenExpiresAt, remember, login, name, firstAccess, churchId, roles];
 }

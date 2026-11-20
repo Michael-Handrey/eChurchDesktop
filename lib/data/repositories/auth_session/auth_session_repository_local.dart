@@ -90,6 +90,7 @@ class AuthSessionRepositoryLocal({required final SecureStorageService _storage})
         name: session.user.name,
         firstAccess: session.user.firstAccess,
         churchId: session.user.churchId,
+        roles: session.user.roles,
       );
       // Por último: sem este JSON a leitura considera a sessão incompleta e descarta.
       await _storage.save(key: StorageKeys.authSession, value: jsonEncode(local.toJson()));
@@ -127,7 +128,13 @@ class AuthSessionRepositoryLocal({required final SecureStorageService _storage})
           accessTokenExpiresAt: _dateOf(local.accessTokenExpiresAt),
           refreshToken: refreshToken,
           refreshTokenExpiresAt: _dateOf(local.refreshTokenExpiresAt),
-          user: AuthSessionUser(login: local.login, name: local.name, firstAccess: local.firstAccess, churchId: local.churchId),
+          user: AuthSessionUser(
+            login: local.login,
+            name: local.name,
+            firstAccess: local.firstAccess,
+            churchId: local.churchId,
+            roles: local.roles ?? const [],
+          ),
         ),
         remember: local.remember,
       );

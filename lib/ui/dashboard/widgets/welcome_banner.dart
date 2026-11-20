@@ -1,5 +1,8 @@
+import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
+import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:provider/provider.dart';
 
 class WelcomeBannerWidget extends StatelessWidget {
   const WelcomeBannerWidget({super.key});
@@ -59,36 +62,66 @@ class WelcomeBannerWidget extends StatelessWidget {
 class WelcomeBannerTextWidget extends StatelessWidget {
   const WelcomeBannerTextWidget({super.key});
 
+  /// Saudação pela hora do dia.
+  static String greetingAt(DateTime now) => switch (now.hour) {
+    >= 5 && < 12 => 'Bom dia',
+    >= 12 && < 18 => 'Boa tarde',
+    _ => 'Boa noite',
+  };
+
+  /// O que a pessoa costuma fazer no sistema, conforme o perfil dela.
+  static String subtitleFor(AuthSessionUser? user) {
+    final roles = user?.roles ?? const [];
+    if (roles.contains(AuthSessionUser.adminRole)) {
+      return 'Acompanhe a igreja e gerencie quem acessa o sistema.';
+    }
+    if (roles.contains('ROLE_SECRETARIA')) {
+      return 'Gerencie os membros, crianças e pedidos de oração da nossa igreja.';
+    }
+    return 'Consulte os membros, aniversariantes e eventos da nossa igreja.';
+  }
+
+  /// Primeiro nome; sem nome cadastrado, o login.
+  static String firstNameOf(AuthSessionUser? user) {
+    final name = (user?.name ?? '').trim();
+    if (name.isEmpty) return user?.login ?? '';
+    return name.split(RegExp(r'\s+')).first;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthSessionNotifier>().user;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
-      children: const [
+      children: [
         Text(
-          'BEM-VINDO,',
-          style: TextStyle(
+          '${greetingAt(DateTime.now()).toUpperCase()},',
+          style: const TextStyle(
             color: AppColors.primaryLight,
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.1,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
-          'Secretaria',
-          style: TextStyle(
+          firstNameOf(user),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 30,
             fontWeight: FontWeight.w800,
             height: 1.15,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
-          'Gerencie os membros, crianças e pedidos de oração da nossa igreja.',
-          style: TextStyle(
+          subtitleFor(user),
+          style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 14,
             fontWeight: FontWeight.w400,

@@ -23,6 +23,10 @@ AuthSessionLocalModel _$AuthSessionLocalModelFromJson(
     name: $checkedConvert('name', (v) => v as String),
     firstAccess: $checkedConvert('firstAccess', (v) => v as bool),
     churchId: $checkedConvert('churchId', (v) => (v as num?)?.toInt()),
+    roles: $checkedConvert(
+      'roles',
+      (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
+    ),
   );
   return val;
 });
@@ -37,4 +41,5 @@ Map<String, dynamic> _$AuthSessionLocalModelToJson(
   'name': instance.name,
   'firstAccess': instance.firstAccess,
   'churchId': instance.churchId,
+  'roles': instance.roles,
 };

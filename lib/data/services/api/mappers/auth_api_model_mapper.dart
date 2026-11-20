@@ -17,5 +17,6 @@ extension UserMeApiModelMapper on UserMeApiModel {
     name: name.trim().isEmpty ? login : name.trim(),
     firstAccess: firstAccess ?? false,
     churchId: churchId,
+    roles: roles ?? const [],
   );
 }

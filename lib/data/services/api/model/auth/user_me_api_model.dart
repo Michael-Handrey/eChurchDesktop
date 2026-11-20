@@ -11,11 +11,12 @@ class const UserMeApiModel({
   final bool? firstAccess,
   final bool? active,
   final int? churchId,
+  final List<String>? roles,
 }) extends Equatable {
   factory UserMeApiModel.fromJson(Map<String, dynamic> json) => _$UserMeApiModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserMeApiModelToJson(this);
 
   @override
-  List<Object?> get props => [login, name, firstAccess, active, churchId];
+  List<Object?> get props => [login, name, firstAccess, active, churchId, roles];
 }

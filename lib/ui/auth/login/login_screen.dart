@@ -1,4 +1,3 @@
-import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
 import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/ui/auth/login/login_viewmodel.dart';
 import 'package:echurch_desktop/ui/auth/login/widgets/brand_panel.dart';
@@ -7,12 +6,12 @@ import 'package:echurch_desktop/ui/core/share/error_messages.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Após o login, o redirect do router (refreshListenable = [AuthSessionNotifier])
-/// leva ao dashboard; a tela só trata loading e erro.
+/// Após o login, o redirect do router (refreshListenable = `AuthSessionNotifier`)
+/// leva ao dashboard; a tela só trata loading e erro. A restauração da sessão
+/// guardada acontece na splash, então o formulário já abre pronto.
 class const LoginScreen({
   super.key,
   required final LoginViewModel viewModel,
-  required final AuthSessionNotifier session,
 }) extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -85,13 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
           Expanded(
             flex: 6,
             child: ListenableBuilder(
-              listenable: Listenable.merge([widget.session, widget.viewModel, widget.viewModel.login, _login, _password, _errorMessage]),
+              listenable: Listenable.merge([widget.viewModel, widget.viewModel.login, _login, _password, _errorMessage]),
               builder: (context, _) {
-                // Restaurando a sessão guardada: evita mostrar o formulário por um instante antes do redirect.
-                if (!widget.session.isRestored) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
-                }
-
                 final filled = _login.text.trim().isNotEmpty && _password.text.isNotEmpty;
 
                 return LoginFormWidget(

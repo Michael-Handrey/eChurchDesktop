@@ -29,10 +29,12 @@ extension DioExceptionMapper on DioException {
     _ => null,
   };
 
-  /// Mensagem enviada pela API Spring: `{"erro": "..."}` ou `{"mensagem": "..."}`.
+  /// Mensagem enviada pela API Spring: `{"erro": "..."}` / `{"mensagem": "..."}` (AuthResource)
+  /// ou `{"message": "..."}` (GlobalExceptionHandler e filtros de segurança).
   String? get serverMessage => switch (response?.data) {
     {'erro': final String message} => message,
     {'mensagem': final String message} => message,
+    {'message': final String message} => message,
     _ => null,
   };
 }

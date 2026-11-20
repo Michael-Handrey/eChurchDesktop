@@ -22,9 +22,17 @@ class const AuthSessionUser({
   required final String name,
   required final bool firstAccess,
   final int? churchId,
+
+  /// Papéis do backend (`ROLE_ADMIN`, `ROLE_SECRETARIA`...). Só decidem o que a tela mostra:
+  /// quem autoriza de verdade é a API.
+  final List<String> roles = const [],
 }) extends Equatable {
+  static const adminRole = 'ROLE_ADMIN';
+
+  bool get isAdmin => roles.contains(adminRole);
+
   @override
-  List<Object?> get props => [login, name, firstAccess, churchId];
+  List<Object?> get props => [login, name, firstAccess, churchId, roles];
 
   @override
   bool? get stringify => false;

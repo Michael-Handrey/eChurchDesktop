@@ -1,15 +1,25 @@
 import 'package:dio/dio.dart';
 import 'package:echurch_desktop/config/environment.dart';
 import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
+import 'package:echurch_desktop/core/church/church_context_notifier.dart';
 import 'package:echurch_desktop/data/repositories/account/account_repository.dart';
 import 'package:echurch_desktop/data/repositories/account/account_repository_remote.dart';
 import 'package:echurch_desktop/data/repositories/auth/auth_repository.dart';
 import 'package:echurch_desktop/data/repositories/auth/auth_repository_remote.dart';
 import 'package:echurch_desktop/data/repositories/auth_session/auth_session_repository.dart';
 import 'package:echurch_desktop/data/repositories/auth_session/auth_session_repository_local.dart';
+import 'package:echurch_desktop/data/repositories/church/church_repository.dart';
+import 'package:echurch_desktop/data/repositories/church/church_repository_remote.dart';
+import 'package:echurch_desktop/data/repositories/group_admin/group_admin_repository.dart';
+import 'package:echurch_desktop/data/repositories/group_admin/group_admin_repository_remote.dart';
+import 'package:echurch_desktop/data/repositories/user_admin/user_admin_repository.dart';
+import 'package:echurch_desktop/data/repositories/user_admin/user_admin_repository_remote.dart';
 import 'package:echurch_desktop/data/services/api/account_api.dart';
 import 'package:echurch_desktop/data/services/api/auth_api.dart';
+import 'package:echurch_desktop/data/services/api/church_api.dart';
+import 'package:echurch_desktop/data/services/api/group_admin_api.dart';
 import 'package:echurch_desktop/data/services/api/interceptors/auth_interceptor.dart';
+import 'package:echurch_desktop/data/services/api/user_admin_api.dart';
 import 'package:echurch_desktop/data/services/local/secure_storage_service.dart';
 import 'package:echurch_desktop/domain/use_cases/auth/auth_logout_use_case.dart';
 import 'package:echurch_desktop/domain/use_cases/auth/auth_refresh_session_use_case.dart';
@@ -59,6 +69,15 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
         Provider(create: (context) => AccountApi(context.read())),
         Provider<AccountRepository>(create: (context) => AccountRepositoryRemote(accountApi: context.read())),
 
+        Provider(create: (context) => UserAdminApi(context.read())),
+        Provider<UserAdminRepository>(create: (context) => UserAdminRepositoryRemote(userAdminApi: context.read())),
+
+        Provider(create: (context) => ChurchApi(context.read())),
+        Provider<ChurchRepository>(create: (context) => ChurchRepositoryRemote(churchApi: context.read())),
+
+        Provider(create: (context) => GroupAdminApi(context.read())),
+        Provider<GroupAdminRepository>(create: (context) => GroupAdminRepositoryRemote(groupAdminApi: context.read())),
+
         Provider(
           create: (context) => AuthLogoutUseCase(authRepository: context.read(), authSessionRepository: context.read()),
         ),
@@ -73,6 +92,10 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
             authRestoreSessionUseCase: context.read(),
             sessionEnded: context.read<AuthInterceptor>().onUnauthorized,
           ),
+        ),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (context) => ChurchContextNotifier(churchRepository: context.read(), sessionNotifier: context.read()),
         ),
         Provider<GoRouter>(create: (context) => router(context.read())),
       ],
