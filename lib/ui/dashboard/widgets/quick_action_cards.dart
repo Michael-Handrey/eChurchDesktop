@@ -13,7 +13,7 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<DashboardViewModel>();
 
-    // Membros e Crianças ainda sem tela: sem ação (e sem cursor de clique).
+    // Crianças ainda sem tela: sem ação (e sem cursor de clique).
     return Row(
       spacing: 20,
       children: [
@@ -25,6 +25,7 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
             title: 'Membros',
             description: 'Cadastre e consulte os membros.',
             stat: viewModel.statOf(QuickStatType.members),
+            onTap: () => viewModel.openFromHome(DashboardViewModel.membersNavItem),
           ),
         ),
         Expanded(

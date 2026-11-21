@@ -3,7 +3,8 @@ import 'package:echurch_desktop/domain/models/prayer/prayer_request.dart';
 import 'package:echurch_desktop/ui/core/share/error_messages.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/prayer_requests/prayer_requests_viewmodel.dart';
-import 'package:echurch_desktop/ui/prayer_requests/widgets/confirm_dialog.dart';
+import 'package:echurch_desktop/ui/core/share/all_churches_chip.dart';
+import 'package:echurch_desktop/ui/core/share/confirm_dialog.dart';
 import 'package:echurch_desktop/ui/prayer_requests/widgets/prayer_request_details_dialog.dart';
 import 'package:echurch_desktop/ui/prayer_requests/widgets/prayer_request_form_dialog.dart';
 import 'package:echurch_desktop/ui/prayer_requests/widgets/prayer_requests_table.dart';
@@ -135,7 +136,7 @@ class const PrayerRequestsScreen({super.key, required final PrayerRequestsViewMo
 class const _Header({required final PrayerRequestsViewModel viewModel, required final VoidCallback onCreate}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final church = viewModel.churchName == null ? '' : ' — ${viewModel.churchName}';
+    final church = viewModel.churchName == null ? (viewModel.allChurches ? ' — todas as igrejas' : '') : ' — ${viewModel.churchName}';
     return Row(
       crossAxisAlignment: .end,
       children: [
@@ -176,38 +177,49 @@ class const _Toolbar({required final PrayerRequestsViewModel viewModel, required
           selected: {viewModel.tab},
           onSelectionChanged: (selection) => viewModel.setTab(selection.first),
         ),
-        const Spacer(),
-        if (selected > 0)
-          FilledButton.tonalIcon(
-            onPressed: busy ? null : onMarkSelected,
-            icon: const Icon(Icons.inventory_2_outlined, size: 18),
-            label: Text(selected == 1 ? 'Marcar 1 no vaso' : 'Marcar $selected no vaso'),
-          )
-        else if (viewModel.canMarkAll)
-          OutlinedButton.icon(
-            onPressed: busy ? null : onMarkAll,
-            icon: const Icon(Icons.inventory_2_outlined, size: 18),
-            label: Text('Marcar todos no vaso (${viewModel.newCount})'),
-          ),
-        SizedBox(
-          width: 260,
-          child: TextField(
-            onChanged: viewModel.setText,
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: 'Buscar por nome ou pedido',
-              prefixIcon: const Icon(Icons.search, size: 20),
-              filled: true,
-              fillColor: AppColors.surface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.border),
+        // Filtros à direita; sem espaço (janela estreita), a busca encolhe.
+        Expanded(
+          child: Row(
+            mainAxisAlignment: .end,
+            spacing: 8,
+            children: [
+              if (viewModel.canSeeAllChurches) AllChurchesChip(selected: viewModel.allChurches, onChanged: viewModel.setAllChurches),
+              if (selected > 0)
+                FilledButton.tonalIcon(
+                  onPressed: busy ? null : onMarkSelected,
+                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  label: Text(selected == 1 ? 'Marcar 1 no vaso' : 'Marcar $selected no vaso'),
+                )
+              else if (viewModel.canMarkAll)
+                OutlinedButton.icon(
+                  onPressed: busy ? null : onMarkAll,
+                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  label: Text('Marcar todos no vaso (${viewModel.newCount})'),
+                ),
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 260),
+                  child: TextField(
+                    onChanged: viewModel.setText,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Buscar por nome ou pedido',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      filled: true,
+                      fillColor: AppColors.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-            ),
+            ],
           ),
         ),
         IconButton(tooltip: 'Atualizar lista', onPressed: viewModel.load.running ? null : viewModel.load.execute, icon: const Icon(Icons.refresh)),
@@ -243,6 +255,7 @@ class const _Content({required final PrayerRequestsViewModel viewModel, required
     return PrayerRequestsTableWidget(
       rows: viewModel.rows,
       canManage: viewModel.canManage,
+      showChurch: viewModel.showChurchColumn,
       pageSelection: viewModel.pageSelection,
       hasSelectable: viewModel.hasSelectable,
       onSelectPage: viewModel.togglePageSelection,

@@ -118,8 +118,8 @@ class SidebarNavListWidget extends StatelessWidget {
                 SidebarSubmenuItemWidget(
                   icon: Icons.person_outline,
                   label: 'Membros',
-                  isSelected: viewModel.selectedNavItem == 'membros',
-                  onTap: () => viewModel.selectNavItem('membros'),
+                  isSelected: viewModel.selectedNavItem == DashboardViewModel.membersNavItem,
+                  onTap: () => viewModel.selectNavItem(DashboardViewModel.membersNavItem),
                 ),
                 SidebarSubmenuItemWidget(
                   icon: Icons.face_outlined,

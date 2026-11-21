@@ -12,14 +12,13 @@ class DashboardViewModel extends ChangeNotifier {
 
   /// Item da sidebar que abre a tela de usuários (só administrador).
   static const usersNavItem = 'usuarios';
+  static const membersNavItem = 'membros';
   static const prayerRequestsNavItem = 'oracao';
 
   String _selectedNavItem = 'inicio';
   bool _isSecretariaExpanded = false;
   bool _isSettingsExpanded = false;
   bool _isReportsExpanded = false;
-  String _searchQuery = '';
-
   // Números fixos por enquanto: virão da API, da igreja em uso (FEAT-6 no TASKS do backend).
   final List<QuickStat> _stats = const [
     QuickStat(label: 'membros ativos', count: 248, type: QuickStatType.members),
@@ -86,7 +85,6 @@ class DashboardViewModel extends ChangeNotifier {
   bool get isSecretariaExpanded => _isSecretariaExpanded;
   bool get isSettingsExpanded => _isSettingsExpanded;
   bool get isReportsExpanded => _isReportsExpanded;
-  String get searchQuery => _searchQuery;
   List<QuickStat> get stats => _stats;
 
   /// Número do card de cima (membros, crianças ou pedidos de oração).
@@ -107,7 +105,7 @@ class DashboardViewModel extends ChangeNotifier {
   /// Abre uma tela a partir da tela inicial (cards): seleciona o item e abre a seção dele no
   /// menu lateral, para o item aparecer marcado.
   void openFromHome(String itemKey) {
-    if (itemKey == prayerRequestsNavItem) _isSecretariaExpanded = true;
+    if (itemKey == prayerRequestsNavItem || itemKey == membersNavItem) _isSecretariaExpanded = true;
     _selectedNavItem = itemKey;
     notifyListeners();
   }
@@ -124,11 +122,6 @@ class DashboardViewModel extends ChangeNotifier {
 
   void toggleSettings() {
     _isSettingsExpanded = !_isSettingsExpanded;
-    notifyListeners();
-  }
-
-  void setSearchQuery(String query) {
-    _searchQuery = query;
     notifyListeners();
   }
 }

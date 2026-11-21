@@ -2,6 +2,8 @@ import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
 import 'package:echurch_desktop/ui/main/widgets/sidebar.dart';
+import 'package:echurch_desktop/ui/members/members_bindings.dart';
+import 'package:echurch_desktop/ui/members/members_screen.dart';
 import 'package:echurch_desktop/ui/prayer_requests/prayer_requests_bindings.dart';
 import 'package:echurch_desktop/ui/prayer_requests/prayer_requests_screen.dart';
 import 'package:echurch_desktop/ui/main/widgets/top_header.dart';
@@ -42,6 +44,9 @@ class MainScreen extends StatelessWidget {
       return UsersBindings(
         screenBuilder: (context) => UsersScreen(viewModel: context.read(), groupsViewModel: context.read()),
       );
+    }
+    if (selected == DashboardViewModel.membersNavItem) {
+      return MembersBindings(screenBuilder: (context) => MembersScreen(viewModel: context.read()));
     }
     if (selected == DashboardViewModel.prayerRequestsNavItem) {
       return PrayerRequestsBindings(screenBuilder: (context) => PrayerRequestsScreen(viewModel: context.read()));

@@ -12,6 +12,9 @@ class const PrayerRequestsTableWidget({
   super.key,
   required final List<PrayerRequestRowView> rows,
   required final bool canManage,
+
+  /// Coluna Igreja: quando a lista junta várias igrejas.
+  final bool showChurch = false,
   required final bool? pageSelection,
   required final bool hasSelectable,
   required final ValueChanged<bool> onSelectPage,
@@ -37,62 +40,81 @@ class const PrayerRequestsTableWidget({
       ),
       clipBehavior: .antiAlias,
       child: LayoutBuilder(
+        // Cabeçalho fixo: uma tabela só com os títulos em cima e outra com as linhas, rolando
+        // embaixo. As duas têm as mesmas colunas (na de baixo, com altura zero), então se alinham.
         builder: (context, constraints) => SingleChildScrollView(
-          child: SingleChildScrollView(
-            scrollDirection: .horizontal,
-            child: SizedBox(
-              width: math.max(constraints.maxWidth, _minWidth),
-              child: DataTable(
-                columnSpacing: 24,
-                showCheckboxColumn: false,
-                headingRowColor: const WidgetStatePropertyAll(AppColors.surfaceSubtle),
-                headingTextStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5, fontWeight: FontWeight.w700),
-                columns: [
-                  if (canManage && hasSelectable)
-                    DataColumn(
-                      columnWidth: const FixedColumnWidth(84), // caixa de seleção + margens da tabela
-                      label: hasSelectable
-                          ? Tooltip(
-                              message: 'Selecionar todos desta página',
-                              child: Checkbox(tristate: true, value: pageSelection, onChanged: (_) => onSelectPage(pageSelection != true)),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  const DataColumn(label: Text('Data'), columnWidth: FixedColumnWidth(110)),
-                  const DataColumn(label: Text('Quem pediu'), columnWidth: FlexColumnWidth(2)),
-                  const DataColumn(label: Text('Pedido'), columnWidth: FlexColumnWidth(5)),
-                  const DataColumn(label: Text('Situação'), columnWidth: MaxColumnWidth(FixedColumnWidth(120), IntrinsicColumnWidth())),
-                  if (canManage) ...[
-                    const DataColumn(label: Text('Registrado por'), columnWidth: FlexColumnWidth(2)),
-                    const DataColumn(label: Text(''), columnWidth: MaxColumnWidth(FixedColumnWidth(300), IntrinsicColumnWidth())),
-                  ],
-                ],
-                rows: [
-                  for (final row in rows)
-                    DataRow(
-                      cells: [
-                        if (canManage && hasSelectable) DataCell(row.selectable ? Checkbox(value: row.selected, onChanged: (value) => onSelect(row.request, value ?? false)) : const SizedBox.shrink()),
-                        DataCell(Text(row.dateLabel)),
-                        DataCell(_Text(row.request.requesterName, bold: true), onTap: () => onOpen(row.request)),
-                        DataCell(_Text(row.request.description), onTap: () => onOpen(row.request)),
-                        DataCell(PrayerRequestStatusChip(request: row.request)),
-                        if (canManage) ...[
-                          DataCell(_Text(row.request.fromCommunity ? 'Comunidade (app)' : row.request.createdByName ?? '—', muted: row.request.fromCommunity)),
-                          DataCell(
-                            Align(
-                              alignment: .centerRight,
-                              child: _Actions(request: row.request, onAction: onAction),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                ],
-              ),
+          scrollDirection: .horizontal,
+          child: SizedBox(
+            width: math.max(constraints.maxWidth, _minWidth),
+            height: constraints.maxHeight,
+            child: Column(
+              crossAxisAlignment: .stretch,
+              children: [
+                _table(header: true),
+                Expanded(child: SingleChildScrollView(child: _table(header: false))),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// [header]: só a linha de títulos; senão, só as linhas (os títulos ficam, com altura zero, para as
+  /// colunas medirem igual nas duas tabelas).
+  DataTable _table({required bool header}) {
+    final columns = <DataColumn>[
+      if (canManage && hasSelectable)
+        DataColumn(
+          columnWidth: const FixedColumnWidth(84), // caixa de seleção + margens da tabela
+          label: header && hasSelectable
+              ? Tooltip(
+                  message: 'Selecionar todos desta página',
+                  child: Checkbox(tristate: true, value: pageSelection, onChanged: (_) => onSelectPage(pageSelection != true)),
+                )
+              : const SizedBox.shrink(),
+        ),
+      const DataColumn(label: Text('Data'), columnWidth: FixedColumnWidth(110)),
+      const DataColumn(label: Text('Quem pediu'), columnWidth: FlexColumnWidth(2)),
+      if (showChurch) const DataColumn(label: Text('Igreja'), columnWidth: FlexColumnWidth(2)),
+      const DataColumn(label: Text('Pedido'), columnWidth: FlexColumnWidth(5)),
+      const DataColumn(label: Text('Situação'), columnWidth: MaxColumnWidth(FixedColumnWidth(120), IntrinsicColumnWidth())),
+      if (canManage) ...[
+        const DataColumn(label: Text('Registrado por'), columnWidth: FlexColumnWidth(2)),
+        const DataColumn(label: Text(''), columnWidth: MaxColumnWidth(FixedColumnWidth(320), IntrinsicColumnWidth())),
+      ],
+    ];
+    return DataTable(
+      columnSpacing: 24,
+      showCheckboxColumn: false,
+      headingRowHeight: header ? 56 : 0,
+      headingRowColor: header ? const WidgetStatePropertyAll(AppColors.surfaceSubtle) : null,
+      headingTextStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5, fontWeight: FontWeight.w700),
+      columns: columns,
+      rows: header
+          ? const []
+          : [
+              for (final row in rows)
+                DataRow(
+                  cells: [
+                    if (canManage && hasSelectable) DataCell(row.selectable ? Checkbox(value: row.selected, onChanged: (value) => onSelect(row.request, value ?? false)) : const SizedBox.shrink()),
+                    DataCell(Text(row.dateLabel)),
+                    DataCell(_Text(row.request.requesterName, bold: true), onTap: () => onOpen(row.request)),
+                    if (showChurch) DataCell(_Text(row.request.churchName ?? '—', muted: true)),
+                    DataCell(_Text(row.request.description), onTap: () => onOpen(row.request)),
+                    DataCell(PrayerRequestStatusChip(request: row.request)),
+                    if (canManage) ...[
+                      DataCell(_Text(row.request.fromCommunity ? 'Comunidade (app)' : row.request.createdByName ?? '—', muted: row.request.fromCommunity)),
+                      DataCell(
+                        Align(
+                          alignment: .centerRight,
+                          child: _Actions(request: row.request, onAction: onAction),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+            ],
     );
   }
 }

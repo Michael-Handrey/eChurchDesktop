@@ -50,6 +50,9 @@ class PrayerRequestsViewModel({
   var _pageIndex = 0;
   final _selected = <int>{};
   int? _loadedChurchId;
+
+  /// "Todas as igrejas" ligado: pedidos de todas as que o usuário alcança (senão, a do seletor).
+  var _allChurches = false;
   Timer? _searchTimer;
 
   @override
@@ -62,7 +65,13 @@ class PrayerRequestsViewModel({
   bool get canManage => _session.user?.canManage ?? false;
   bool get isAdmin => _session.user?.isAdmin ?? false;
 
-  String? get churchName => _churchContext.selected?.name;
+  /// Nome da igreja da lista; nulo em "Todas as igrejas".
+  String? get churchName => _allChurches ? null : _churchContext.selected?.name;
+  bool get allChurches => _allChurches;
+
+  /// Só quem alcança mais de uma igreja tem o "Todas as igrejas" (e a coluna Igreja com ele ligado).
+  bool get canSeeAllChurches => _churchContext.churches.length > 1;
+  bool get showChurchColumn => canSeeAllChurches && _allChurches;
   bool get isHeadquarters => _churchContext.selected?.headquarters ?? false;
   int? get _churchId => _churchContext.selected?.id;
 
@@ -75,8 +84,9 @@ class PrayerRequestsViewModel({
   bool get hasPrevious => _page.page > 0;
   bool get hasNext => _page.page + 1 < _page.pageCount;
 
-  /// "Marcar todos no vaso": na aba de novos, com pedidos e sem busca (todos = todos os novos da igreja).
-  bool get canMarkAll => canManage && _tab == PrayerRequestTab.newRequests && _text.trim().isEmpty && _page.total > 0;
+  /// "Marcar todos no vaso": na aba de novos, com pedidos, sem busca e numa igreja só (todos = todos
+  /// os novos da igreja).
+  bool get canMarkAll => canManage && !_allChurches && _tab == PrayerRequestTab.newRequests && _text.trim().isEmpty && _page.total > 0;
 
   /// Quantos novos "marcar todos" vai mexer (o total da aba de novos).
   int get newCount => _tab == PrayerRequestTab.newRequests ? _page.total : 0;
@@ -142,6 +152,12 @@ class PrayerRequestsViewModel({
     _searchTimer = Timer(_searchDebounce, _restart);
   }
 
+  void setAllChurches(bool value) {
+    if (value == _allChurches || (value && !canSeeAllChurches)) return;
+    _allChurches = value;
+    _restart();
+  }
+
   void nextPage() {
     if (!hasNext) return;
     _pageIndex = _page.page + 1;
@@ -173,6 +189,7 @@ class PrayerRequestsViewModel({
     final churchId = _churchId;
     if (churchId == null || churchId == _loadedChurchId) return;
     _loadedChurchId = churchId;
+    _allChurches = false;
     _restart();
   }
 
@@ -193,7 +210,7 @@ class PrayerRequestsViewModel({
       PrayerRequestTab.all || PrayerRequestTab.excluded => null,
     };
     try {
-      final result = await _repository.search(churchId: churchId, status: status, text: _text, excluded: _tab == PrayerRequestTab.excluded, page: _pageIndex, size: pageSize);
+      final result = await _repository.search(churchId: _allChurches ? null : churchId, status: status, text: _text, excluded: _tab == PrayerRequestTab.excluded, page: _pageIndex, size: pageSize);
       switch (result) {
         case Ok<PrayerRequestPage>(:final value):
           _page = value;

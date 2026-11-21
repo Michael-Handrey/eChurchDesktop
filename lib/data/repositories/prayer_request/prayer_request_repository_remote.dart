@@ -9,7 +9,7 @@ import 'package:echurch_desktop/domain/models/prayer/prayer_request.dart';
 
 class PrayerRequestRepositoryRemote({required final PrayerRequestApi _api}) implements PrayerRequestRepository {
   @override
-  Future<Result<PrayerRequestPage>> search({required int churchId, PrayerRequestStatus? status, String? text, bool excluded = false, int page = 0, int size = 20}) => _guard(() async {
+  Future<Result<PrayerRequestPage>> search({int? churchId, PrayerRequestStatus? status, String? text, bool excluded = false, int page = 0, int size = 20}) => _guard(() async {
     final term = text?.trim();
     final result = await _api.search(churchId: churchId, status: status?.apiValue, text: term == null || term.isEmpty ? null : term, excluded: excluded ? true : null, page: page, size: size);
     return result.toDomain();

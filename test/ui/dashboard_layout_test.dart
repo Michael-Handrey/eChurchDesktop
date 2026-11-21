@@ -66,7 +66,7 @@ void main() {
     expect(find.text('criança'), findsNWidgets(2), reason: 'Pedro (hoje) e Lucas (próximos dias)');
   });
 
-  testWidgets('card de pedido de oração leva à tela de pedidos e abre a Secretaria no menu', (tester) async {
+  testWidgets('cards de membros e de pedido de oração levam às telas e abrem a Secretaria no menu', (tester) async {
     await pumpHome(tester);
 
     await tester.tap(find.text('Pedido de Oração'));
@@ -75,7 +75,11 @@ void main() {
 
     viewModel.selectNavItem('inicio');
     await tester.tap(find.text('Membros'));
-    expect(viewModel.selectedNavItem, 'inicio', reason: 'Membros ainda sem tela');
+    expect(viewModel.selectedNavItem, DashboardViewModel.membersNavItem);
+
+    viewModel.selectNavItem('inicio');
+    await tester.tap(find.text('Crianças'));
+    expect(viewModel.selectedNavItem, 'inicio', reason: 'Crianças ainda sem tela');
   });
 
   testWidgets('ninguém na semana: um aviso só, centralizado, e os painéis com a mesma altura', (tester) async {

@@ -1,6 +1,6 @@
 import 'package:echurch_desktop/core/church/church_context_notifier.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
-import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
+import 'package:echurch_desktop/ui/main/widgets/member_quick_search.dart';
 import 'package:echurch_desktop/ui/main/widgets/user_menu.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +16,7 @@ class TopHeaderWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Row(
         children: const [
-          Expanded(child: SearchInputWidget()),
+          Expanded(child: MemberQuickSearchWidget()),
           SizedBox(width: 24),
           NotificationBadgeWidget(),
           SizedBox(width: 20),
@@ -26,53 +26,6 @@ class TopHeaderWidget extends StatelessWidget {
           SizedBox(width: 16),
           UserMenuWidget(),
         ],
-      ),
-    );
-  }
-}
-
-class SearchInputWidget extends StatelessWidget {
-  const SearchInputWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final viewModel = context.read<DashboardViewModel>();
-
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
-        child: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.searchBarBackground,
-            border: Border.all(color: AppColors.searchBarBorder, width: 1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: TextField(
-            onChanged: viewModel.setSearchQuery,
-            style: const TextStyle(
-              color: AppColors.textOnPrimary,
-              fontSize: 13.5,
-            ),
-            cursorColor: AppColors.textOnPrimary,
-            decoration: const InputDecoration(
-              isDense: true,
-              hintText: 'Buscar por nome, CPF, telefone...',
-              hintStyle: TextStyle(
-                color: AppColors.textOnPrimaryMuted,
-                fontSize: 13.5,
-              ),
-              prefixIcon: Icon(
-                Icons.search,
-                color: AppColors.textOnPrimaryMuted,
-                size: 20,
-              ),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: 10),
-            ),
-          ),
-        ),
       ),
     );
   }

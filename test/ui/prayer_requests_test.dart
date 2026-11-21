@@ -3,6 +3,7 @@ import 'package:echurch_desktop/core/exceptions/app_exception.dart';
 import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/data/repositories/prayer_request/prayer_request_repository.dart';
 import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
+import 'package:echurch_desktop/domain/models/church/church_summary.dart';
 import 'package:echurch_desktop/domain/models/prayer/prayer_request.dart';
 import 'package:echurch_desktop/ui/prayer_requests/prayer_requests_screen.dart';
 import 'package:echurch_desktop/ui/prayer_requests/prayer_requests_viewmodel.dart';
@@ -26,7 +27,7 @@ class _FakePrayerRequestRepository implements PrayerRequestRepository {
     PrayerRequest(id: 3, requesterName: 'Pedro Lima', description: 'Emprego', requestDate: DateTime(2026, 11, 18), status: PrayerRequestStatus.inVase, churchId: 1, printedAt: DateTime(2026, 11, 19)),
     PrayerRequest(id: 4, requesterName: 'Ofensa', description: 'Texto que não condiz', requestDate: DateTime(2026, 11, 10), status: PrayerRequestStatus.rejected, churchId: 1, rejectionReason: 'Ofensivo', actions: const {PrayerRequestAction.exclude}),
   ];
-  final searches = <({int churchId, PrayerRequestStatus? status, String? text, bool excluded})>[];
+  final searches = <({int? churchId, PrayerRequestStatus? status, String? text, bool excluded})>[];
   final created = <PrayerRequestDraft>[];
   final inVase = <Set<int>>[];
   final allInVase = <int>[];
@@ -49,7 +50,7 @@ class _FakePrayerRequestRepository implements PrayerRequestRepository {
   );
 
   @override
-  Future<Result<PrayerRequestPage>> search({required int churchId, PrayerRequestStatus? status, String? text, bool excluded = false, int page = 0, int size = 20}) async {
+  Future<Result<PrayerRequestPage>> search({int? churchId, PrayerRequestStatus? status, String? text, bool excluded = false, int page = 0, int size = 20}) async {
     searches.add((churchId: churchId, status: status, text: text, excluded: excluded));
     if (error case final e?) return Result.error(e);
     final items = [
@@ -117,10 +118,13 @@ void main() {
   late _FakePrayerRequestRepository repository;
 
   /// ViewModel já carregado na igreja do usuário (sede).
-  Future<PrayerRequestsViewModel> viewModelFor(AuthSessionUser user, {WidgetTester? tester}) async {
+  late ChurchContextNotifier churchContext;
+
+  /// [reachable]: igrejas que o usuário alcança (o padrão é só a sede).
+  Future<PrayerRequestsViewModel> viewModelFor(AuthSessionUser user, {WidgetTester? tester, List<ChurchSummary>? reachable}) async {
     repository = _FakePrayerRequestRepository(canManage: user.canManage);
     final session = sessionSignedInAs(user);
-    final churchContext = ChurchContextNotifier(churchRepository: FakeChurchRepository([churches.first]), sessionNotifier: session);
+    churchContext = ChurchContextNotifier(churchRepository: FakeChurchRepository(reachable ?? [churches.first]), sessionNotifier: session);
     final viewModel = PrayerRequestsViewModel(repository: repository, churchContext: churchContext, session: session)..init();
     Future<void> settle() async {
       await pumpEventQueue();
@@ -131,11 +135,11 @@ void main() {
     return viewModel;
   }
 
-  Future<PrayerRequestsViewModel> pumpScreen(WidgetTester tester, AuthSessionUser user) async {
-    tester.view.physicalSize = const Size(1800, 1000);
+  Future<PrayerRequestsViewModel> pumpScreen(WidgetTester tester, AuthSessionUser user, {List<ChurchSummary>? reachable}) async {
+    tester.view.physicalSize = const Size(2000, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final viewModel = await viewModelFor(user, tester: tester);
+    final viewModel = await viewModelFor(user, tester: tester, reachable: reachable);
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(body: PrayerRequestsScreen(viewModel: viewModel)),
@@ -188,6 +192,28 @@ void main() {
       expect(viewModel.canMarkAll, isFalse);
     });
 
+    test('"Todas as igrejas": busca sem igreja, sem "marcar todos"; trocar o seletor desliga', () async {
+      final viewModel = await viewModelFor(_secretaria, reachable: churches);
+      expect(viewModel.canSeeAllChurches, isTrue);
+      expect(viewModel.canMarkAll, isTrue);
+
+      viewModel.setAllChurches(true);
+      await pumpEventQueue();
+      expect(repository.searches.last.churchId, isNull);
+      expect(viewModel.canMarkAll, isFalse, reason: '"marcar todos" é por igreja');
+      expect(viewModel.showChurchColumn, isTrue);
+
+      churchContext.select(2);
+      await pumpEventQueue();
+      expect(viewModel.allChurches, isFalse);
+      expect(repository.searches.last.churchId, 2);
+    });
+
+    test('quem alcança só uma igreja não tem o "Todas as igrejas"', () async {
+      final viewModel = await viewModelFor(_secretaria);
+      expect(viewModel.canSeeAllChurches, isFalse);
+    });
+
     test('quem só consulta não tem seleção nem ações', () async {
       final viewModel = await viewModelFor(_consulta);
       expect(viewModel.canManage, isFalse);
@@ -197,6 +223,37 @@ void main() {
   });
 
   group('Tela', () {
+    testWidgets('"Todas as igrejas" mostra a coluna Igreja (traço nos sem igreja)', (tester) async {
+      await pumpScreen(tester, _secretaria, reachable: churches);
+      expect(find.text('Igreja'), findsNothing);
+
+      await tester.tap(find.text('Todas as igrejas'));
+      await tester.runAsync(pumpEventQueue);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Igreja'), findsNWidgets(2), reason: 'título fixo e a cópia de altura zero que mede a coluna');
+      expect(find.text('Sede - Rolândia'), findsOneWidget, reason: 'Ana; o Visitante (sem igreja) fica com traço');
+      expect(find.textContaining('Marcar todos'), findsNothing);
+    });
+
+    testWidgets('ao rolar a lista, os títulos das colunas ficam no lugar', (tester) async {
+      final viewModel = await pumpScreen(tester, _consulta);
+      repository.stored = [
+        for (var i = 1; i <= 20; i++) PrayerRequest(id: i, requesterName: 'Pessoa $i', description: 'Pedido $i', requestDate: DateTime(2026, 11, 20), status: PrayerRequestStatus.newRequest),
+      ];
+      await tester.runAsync(viewModel.load.execute);
+      await tester.pumpAndSettle();
+
+      final titleTop = tester.getTopLeft(find.text('Quem pediu').first).dy;
+      final firstTop = tester.getTopLeft(find.text('Pessoa 1')).dy;
+      await tester.drag(find.text('Pessoa 3'), const Offset(0, -400));
+      await tester.pumpAndSettle();
+
+      expect(tester.getTopLeft(find.text('Quem pediu').first).dy, titleTop);
+      expect(tester.getTopLeft(find.text('Pessoa 1')).dy, lessThan(firstTop), reason: 'as linhas rolaram');
+      expect(tester.getTopLeft(find.text('Quem pediu').first).dx, closeTo(tester.getTopLeft(find.text('Pessoa 1')).dx, 1), reason: 'título alinhado com a coluna');
+    });
+
     testWidgets('secretaria vê seleção e só os botões que a API permite', (tester) async {
       await pumpScreen(tester, _secretaria);
       expect(find.text('Ana Souza'), findsOneWidget);

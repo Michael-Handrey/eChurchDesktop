@@ -5,8 +5,9 @@ import 'package:echurch_desktop/domain/models/prayer/prayer_request.dart';
 /// chegam como `ValidationException` com a mensagem dela.
 abstract interface class PrayerRequestRepository {
   /// [status] nulo = todas as situações; [text] busca em nome e pedido; [excluded] = só os excluídos
-  /// (administrador). Na Sede, inclui os pedidos sem igreja.
-  Future<Result<PrayerRequestPage>> search({required int churchId, PrayerRequestStatus? status, String? text, bool excluded = false, int page = 0, int size = 20});
+  /// (administrador). [churchId] nulo = todas as igrejas que o usuário alcança. Quem alcança a Sede
+  /// vê também os pedidos sem igreja.
+  Future<Result<PrayerRequestPage>> search({int? churchId, PrayerRequestStatus? status, String? text, bool excluded = false, int page = 0, int size = 20});
 
   Future<Result<PrayerRequest>> create(PrayerRequestDraft draft);
 

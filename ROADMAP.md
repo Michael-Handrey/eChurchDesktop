@@ -62,7 +62,7 @@ O que o **Usuário** vê de cada membro:
 | CPF, RG | Não |
 | Estado civil, filiação, histórico (batismo, entrada, saída) | Não |
 
-**Ninguém exclui membros, nem o Administrador.** Desativa-se com um **motivo** (saiu da igreja, transferido para outra igreja, mudou de cidade, falecimento, cadastro duplicado, outro) e uma **descrição obrigatória**; o sistema grava quem desativou e quando. Reativar volta o membro para ativo (a justificativa anterior fica no log de auditoria). Já vale na API; a tela de membros terá os botões "Desativar" e "Reativar".
+**Ninguém exclui membros, nem o Administrador.** Desativa-se com um **motivo** (saiu da igreja, transferido para outra igreja, mudou de cidade, falecimento, cadastro duplicado, outro) e uma **descrição obrigatória**; o sistema grava quem desativou e quando. Reativar volta o membro para ativo (a justificativa anterior fica no log de auditoria). Já vale na API e na tela de membros (botões "Desativar" e "Reativar", só para Secretaria/Administrador).
 
 **Acesso por igreja: "sede supervisiona".** O alcance depende da igreja **e** da permissão:
 
@@ -76,14 +76,15 @@ O que o **Usuário** vê de cada membro:
 O que pode fazer em cada igreja alcançada vem dos grupos (ex.: secretaria da sede edita membros de qualquer filial).
 
 - **Feito na API (2026-11-20):** a regra vale para a lista de igrejas, o seletor da barra superior e os endpoints de **membros e apelos** (ler e alterar). As permissões por grupo também já valem na API: só Secretaria/Administrador alteram, só o Administrador exclui, e quem só consulta recebe o membro com os dados reduzidos da tabela acima (SEC-12b e SEC-13 no TASKS do backend).
-- **A fazer na tela de membros:** o app esconder ou desabilitar o que cada um não pode fazer, e mostrar os membros da igreja escolhida no seletor.
+- **Feito na tela de membros (etapa 1, 2026-11-20):** lista da igreja escolhida no seletor (Ativos / Inativos / Todos, busca por nome, filtro por cargo, páginas de 20, cabeçalho fixo ao rolar), detalhes (completos para Secretaria/Administrador, reduzidos para quem só consulta), desativar com motivo e descrição, e reativar. Quem só consulta não vê os botões.
+- **Busca rápida na barra superior (2026-11-21):** acha um membro pelo nome, telefone ou (Secretaria/Administrador) CPF, comparando só os dígitos, em todas as igrejas do alcance e em qualquer situação. Os resultados (até 8) aparecem numa lista abaixo do campo; clicar ou Enter abre a ficha sem sair da tela. Ctrl+K vai para o campo, Esc fecha. Quando existir a tela de **Crianças**, entram como outro grupo na mesma lista. A busca da tela de membros usa a mesma regra.
+- **A fazer (etapa 2):** cadastro e edição do membro (formulário completo: dados pessoais, documentos, endereço, contato, cargo, ministérios, histórico).
 - **Pedido de oração:** o Usuário poder registrar depende do cadastro de pedidos de oração, que ainda não existe na API (FEAT-9 no TASKS).
 
 ### Igreja em uso (seletor da barra superior)
 
-Hoje a troca ainda não muda nenhum dado na tela, porque nenhuma tela lista dados por igreja.
+As telas de **Membros** e **Pedidos de Oração** já seguem a igreja escolhida. O seletor indica a **igreja em uso** (onde entram os registros novos, qual igreja o "marcar todos no vaso" atinge), por isso não tem a opção "todas" (decidido em 2026-11-21). Nas listas, quem alcança mais de uma igreja tem o botão **"Todas as igrejas"**: mostra as igrejas do alcance juntas, com a coluna Igreja; trocar o seletor volta para a igreja escolhida. Nos pedidos, com ele ligado não há "marcar todos no vaso" (é por igreja).
 
-- **Membros:** a tela vai mostrar os membros da igreja escolhida no seletor.
 - **Painel inicial (layout de 2026-11-20):** cards de Membros, Crianças e Pedido de Oração com o número de cada área (membros ativos, crianças cadastradas, pedidos novos); painel **Aniversariantes** (de hoje, com a idade, e dos próximos 7 dias; membros e crianças) ao lado dos **Últimos Registros**; faixa "Juntos na missão" no fim. Hoje os dados são fixos: vão carregar da API, da igreja escolhida (FEAT-6 no TASKS do backend).
 
 ### Grupos futuros
