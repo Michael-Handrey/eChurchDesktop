@@ -12,6 +12,8 @@ import 'package:echurch_desktop/data/repositories/church/church_repository.dart'
 import 'package:echurch_desktop/data/repositories/church/church_repository_remote.dart';
 import 'package:echurch_desktop/data/repositories/group_admin/group_admin_repository.dart';
 import 'package:echurch_desktop/data/repositories/group_admin/group_admin_repository_remote.dart';
+import 'package:echurch_desktop/data/repositories/prayer_request/prayer_request_repository.dart';
+import 'package:echurch_desktop/data/repositories/prayer_request/prayer_request_repository_remote.dart';
 import 'package:echurch_desktop/data/repositories/user_admin/user_admin_repository.dart';
 import 'package:echurch_desktop/data/repositories/user_admin/user_admin_repository_remote.dart';
 import 'package:echurch_desktop/data/services/api/account_api.dart';
@@ -19,6 +21,7 @@ import 'package:echurch_desktop/data/services/api/auth_api.dart';
 import 'package:echurch_desktop/data/services/api/church_api.dart';
 import 'package:echurch_desktop/data/services/api/group_admin_api.dart';
 import 'package:echurch_desktop/data/services/api/interceptors/auth_interceptor.dart';
+import 'package:echurch_desktop/data/services/api/prayer_request_api.dart';
 import 'package:echurch_desktop/data/services/api/user_admin_api.dart';
 import 'package:echurch_desktop/data/services/local/secure_storage_service.dart';
 import 'package:echurch_desktop/domain/use_cases/auth/auth_logout_use_case.dart';
@@ -74,6 +77,9 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
 
         Provider(create: (context) => ChurchApi(context.read())),
         Provider<ChurchRepository>(create: (context) => ChurchRepositoryRemote(churchApi: context.read())),
+
+        Provider(create: (context) => PrayerRequestApi(context.read())),
+        Provider<PrayerRequestRepository>(create: (context) => PrayerRequestRepositoryRemote(api: context.read())),
 
         Provider(create: (context) => GroupAdminApi(context.read())),
         Provider<GroupAdminRepository>(create: (context) => GroupAdminRepositoryRemote(groupAdminApi: context.read())),

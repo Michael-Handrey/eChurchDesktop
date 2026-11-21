@@ -28,8 +28,12 @@ class const AuthSessionUser({
   final List<String> roles = const [],
 }) extends Equatable {
   static const adminRole = 'ROLE_ADMIN';
+  static const secretaryRole = 'ROLE_SECRETARIA';
 
   bool get isAdmin => roles.contains(adminRole);
+
+  /// Administrador ou Secretaria: gerencia os cadastros (a API confere a mesma regra).
+  bool get canManage => isAdmin || roles.contains(secretaryRole);
 
   @override
   List<Object?> get props => [login, name, firstAccess, churchId, roles];

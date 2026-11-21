@@ -1,40 +1,51 @@
+import 'package:echurch_desktop/domain/models/dashboard/quick_stat.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
+import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:provider/provider.dart';
 
+/// Cards da tela inicial: atalho para a área e o número principal dela (substituem as antigas
+/// "Estatísticas Rápidas").
 class QuickActionCardsSectionWidget extends StatelessWidget {
   const QuickActionCardsSectionWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<DashboardViewModel>();
+
+    // Membros e Crianças ainda sem tela: sem ação (e sem cursor de clique).
     return Row(
-      children: const [
+      spacing: 20,
+      children: [
         Expanded(
           child: QuickActionCardWidget(
             icon: Icons.person,
             iconColor: AppColors.membersIcon,
             iconBgColor: AppColors.membersBg,
             title: 'Membros',
-            description: 'Cadastre, edite e consulte\nos membros da igreja.',
+            description: 'Cadastre e consulte os membros.',
+            stat: viewModel.statOf(QuickStatType.members),
           ),
         ),
-        SizedBox(width: 20),
         Expanded(
           child: QuickActionCardWidget(
             icon: Icons.face_outlined,
             iconColor: AppColors.childrenIcon,
             iconBgColor: AppColors.childrenBg,
             title: 'Crianças',
-            description: 'Gerencie o cadastro de crianças\ne responsáveis.',
+            description: 'Crianças e seus responsáveis.',
+            stat: viewModel.statOf(QuickStatType.children),
           ),
         ),
-        SizedBox(width: 20),
         Expanded(
           child: QuickActionCardWidget(
             icon: Icons.volunteer_activism_outlined,
             iconColor: AppColors.prayerIcon,
             iconBgColor: AppColors.prayerBg,
             title: 'Pedido de Oração',
-            description: 'Registre e acompanhe os pedidos\nde oração da igreja.',
+            description: 'Registre e acompanhe os pedidos.',
+            stat: viewModel.statOf(QuickStatType.prayers),
+            onTap: () => viewModel.openFromHome(DashboardViewModel.prayerRequestsNavItem),
           ),
         ),
       ],
@@ -47,7 +58,10 @@ class QuickActionCardWidget extends StatefulWidget {
   final Color iconColor;
   final Color iconBgColor;
   final String title;
+
+  /// Uma linha só (cortada com "…" se faltar espaço).
   final String description;
+  final QuickStat stat;
   final VoidCallback? onTap;
 
   const QuickActionCardWidget({
@@ -57,6 +71,7 @@ class QuickActionCardWidget extends StatefulWidget {
     required this.iconBgColor,
     required this.title,
     required this.description,
+    required this.stat,
     this.onTap,
   });
 
@@ -69,77 +84,72 @@ class _QuickActionCardWidgetState extends State<QuickActionCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final clickable = widget.onTap != null;
+
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
+      onEnter: (_) => setState(() => _isHovered = clickable),
       onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
+      cursor: clickable ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.all(22),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: _isHovered ? widget.iconColor.withValues(alpha: 0.5) : AppColors.border,
-              width: 1.2,
-            ),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                      color: widget.iconColor.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : const [],
+            border: Border.all(color: _isHovered ? widget.iconColor.withValues(alpha: 0.5) : AppColors.border, width: 1.2),
+            boxShadow: _isHovered ? [BoxShadow(color: widget.iconColor.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 4))] : const [],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
               Container(
                 width: 48,
                 height: 48,
-                decoration: BoxDecoration(
-                  color: widget.iconBgColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(
-                    widget.icon,
-                    color: widget.iconColor,
-                    size: 26,
-                  ),
+                decoration: BoxDecoration(color: widget.iconBgColor, shape: BoxShape.circle),
+                child: Icon(widget.icon, color: widget.iconColor, size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4,
+                  children: [
+                    Row(
+                      spacing: 6,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        if (clickable) Icon(Icons.arrow_forward, color: _isHovered ? widget.iconColor : AppColors.textMuted, size: 16),
+                      ],
+                    ),
+                    Text(
+                      widget.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 18),
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
+              const SizedBox(width: 12),
+              // Número principal da área, à direita.
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Expanded(
-                    child: Text(
-                      widget.description,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        height: 1.35,
-                      ),
-                    ),
+                  Text(
+                    '${widget.stat.count}',
+                    style: TextStyle(color: widget.iconColor, fontSize: 28, fontWeight: FontWeight.w800, height: 1.1),
                   ),
-                  Icon(
-                    Icons.arrow_forward,
-                    color: _isHovered ? widget.iconColor : AppColors.textPrimary,
-                    size: 18,
+                  Text(
+                    widget.stat.label,
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),

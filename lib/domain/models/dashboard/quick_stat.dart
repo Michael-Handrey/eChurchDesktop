@@ -1,10 +1,10 @@
 enum QuickStatType {
   members,
-  birthdays,
   children,
   prayers,
 }
 
+/// Número de um card da tela inicial, ex.: 248 "membros ativos".
 class QuickStat {
   final String label;
   final int count;

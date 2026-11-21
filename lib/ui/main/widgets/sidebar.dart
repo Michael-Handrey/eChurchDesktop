@@ -134,16 +134,16 @@ class SidebarNavListWidget extends StatelessWidget {
                   onTap: () => viewModel.selectNavItem('ministerios'),
                 ),
                 SidebarSubmenuItemWidget(
+                  icon: Icons.volunteer_activism_outlined,
+                  label: 'Pedido de Oração',
+                  isSelected: viewModel.selectedNavItem == DashboardViewModel.prayerRequestsNavItem,
+                  onTap: () => viewModel.selectNavItem(DashboardViewModel.prayerRequestsNavItem),
+                ),
+                SidebarSubmenuItemWidget(
                   icon: Icons.calendar_today_outlined,
                   label: 'Eventos',
                   isSelected: viewModel.selectedNavItem == 'eventos',
                   onTap: () => viewModel.selectNavItem('eventos'),
-                ),
-                SidebarSubmenuItemWidget(
-                  icon: Icons.volunteer_activism_outlined,
-                  label: 'Pedido de Oração',
-                  isSelected: viewModel.selectedNavItem == 'oracao',
-                  onTap: () => viewModel.selectNavItem('oracao'),
                 ),
               ],
             ),

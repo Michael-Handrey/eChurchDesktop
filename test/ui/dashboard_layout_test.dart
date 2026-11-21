@@ -1,60 +1,108 @@
+import 'package:echurch_desktop/domain/models/dashboard/birthday.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
-import 'package:echurch_desktop/ui/dashboard/widgets/quick_stats.dart';
+import 'package:echurch_desktop/ui/dashboard/widgets/birthdays.dart';
+import 'package:echurch_desktop/ui/dashboard/widgets/quick_action_cards.dart';
 import 'package:echurch_desktop/ui/dashboard/widgets/recent_activity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
-/// Alinhamento dos painéis "Estatísticas Rápidas" e "Últimos Registros" do painel inicial.
+/// Tela inicial: cards com o número de cada área, aniversariantes ao lado dos últimos registros.
 void main() {
-  Future<void> pumpPanels(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1600, 1000);
+  late DashboardViewModel viewModel;
+
+  Future<void> pumpHome(WidgetTester tester, [DashboardViewModel? custom]) async {
+    tester.view.physicalSize = const Size(1600, 1100);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    viewModel = custom ?? DashboardViewModel();
 
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => DashboardViewModel(),
+      ChangeNotifierProvider.value(
+        value: viewModel,
         child: const MaterialApp(
-          home: Scaffold(body: SingleChildScrollView(child: DashboardLowerPanelsWidget())),
+          home: Scaffold(
+            body: SingleChildScrollView(child: Column(children: [QuickActionCardsSectionWidget(), DashboardLowerPanelsWidget()])),
+          ),
         ),
       ),
     );
   }
 
-  testWidgets('os dois painéis têm a mesma altura e os títulos começam na mesma linha', (tester) async {
-    await pumpPanels(tester);
+  testWidgets('cards de cima mostram o número de cada área e a descrição em uma linha', (tester) async {
+    await pumpHome(tester);
 
-    final stats = tester.getRect(find.byType(QuickStatsSectionWidget));
+    expect(find.text('248'), findsOneWidget);
+    expect(find.text('membros ativos'), findsOneWidget);
+    expect(find.text('72'), findsOneWidget);
+    expect(find.text('18'), findsOneWidget);
+
+    for (final description in ['Cadastre e consulte os membros.', 'Crianças e seus responsáveis.', 'Registre e acompanhe os pedidos.']) {
+      expect(tester.widget<Text>(find.text(description)).maxLines, 1);
+    }
+    final heights = tester.widgetList(find.byType(QuickActionCardWidget)).map((card) => tester.getSize(find.byWidget(card)).height).toSet();
+    expect(heights, hasLength(1), reason: 'os três cards com a mesma altura');
+  });
+
+  testWidgets('aniversariantes e últimos registros lado a lado, com a mesma altura', (tester) async {
+    await pumpHome(tester);
+
+    final birthdays = tester.getRect(find.byType(BirthdaysSectionWidget));
     final recent = tester.getRect(find.byType(RecentActivitySectionWidget));
-    expect(stats.height, recent.height);
-    expect(stats.top, recent.top);
-
-    expect(tester.getRect(find.byType(QuickStatsHeaderWidget)).top, tester.getRect(find.byType(RecentActivityHeaderWidget)).top);
-    expect(tester.getSize(find.byType(QuickStatsHeaderWidget)).height, tester.getSize(find.byType(RecentActivityHeaderWidget)).height);
+    expect(birthdays.height, recent.height);
+    expect(birthdays.top, recent.top);
+    expect(tester.getRect(find.text('Aniversariantes')).top, tester.getRect(find.text('Últimos Registros')).top, reason: 'títulos na mesma linha');
   });
 
-  testWidgets('cards de estatística alinhados com as bordas do banner e com a mesma altura', (tester) async {
-    await pumpPanels(tester);
+  testWidgets('aniversariantes: hoje com a idade e os próximos 7 dias', (tester) async {
+    await pumpHome(tester);
 
-    final cards = tester.widgetList(find.byType(StatCounterCardWidget)).map((card) => tester.getRect(find.byWidget(card))).toList();
-    final banner = tester.getRect(find.byType(MissionBannerWidget));
-
-    expect(cards.first.left, banner.left);
-    expect(cards.last.right, closeTo(banner.right, 0.5));
-    expect(cards.map((card) => card.height).toSet(), hasLength(1));
-    expect(cards.map((card) => card.top).toSet(), hasLength(1));
+    expect(find.text('3 hoje'), findsOneWidget);
+    expect(find.text('Maria Souza'), findsOneWidget);
+    expect(find.text('34 anos'), findsOneWidget);
+    expect(find.text('Carla Dias'), findsOneWidget);
+    expect(find.text(BirthdaysSectionWidget.dayLabel(viewModel.birthdaysNext.first.date)), findsOneWidget);
+    expect(find.text('criança'), findsNWidgets(2), reason: 'Pedro (hoje) e Lucas (próximos dias)');
   });
 
-  testWidgets('estatísticas mostram os aniversariantes do dia, com o número alinhado aos outros', (tester) async {
-    await pumpPanels(tester);
+  testWidgets('card de pedido de oração leva à tela de pedidos e abre a Secretaria no menu', (tester) async {
+    await pumpHome(tester);
 
-    expect(find.byType(StatCounterCardWidget), findsNWidgets(4));
-    expect(find.text('Aniversariantes do Dia'), findsOneWidget);
-    expect(find.byIcon(Icons.cake_outlined), findsOneWidget);
+    await tester.tap(find.text('Pedido de Oração'));
+    expect(viewModel.selectedNavItem, DashboardViewModel.prayerRequestsNavItem);
+    expect(viewModel.isSecretariaExpanded, isTrue);
 
-    final numbers = ['248', '3', '72', '18'].map((value) => tester.getRect(find.text(value)).top).toSet();
-    expect(numbers, hasLength(1), reason: 'números na mesma linha, mesmo com rótulo de duas linhas');
+    viewModel.selectNavItem('inicio');
+    await tester.tap(find.text('Membros'));
+    expect(viewModel.selectedNavItem, 'inicio', reason: 'Membros ainda sem tela');
+  });
+
+  testWidgets('ninguém na semana: um aviso só, centralizado, e os painéis com a mesma altura', (tester) async {
+    await pumpHome(tester, DashboardViewModel(birthdaysToday: const [], birthdaysNext: const []));
+
+    expect(find.text('Nenhum aniversário esta semana'), findsOneWidget);
+    expect(find.text('HOJE'), findsNothing);
+    expect(find.textContaining('hoje'), findsNothing, reason: 'sem a etiqueta "N hoje"');
+
+    final panel = tester.getRect(find.byType(BirthdaysSectionWidget));
+    expect(panel.height, tester.getRect(find.byType(RecentActivitySectionWidget)).height);
+    final message = tester.getRect(find.text('Nenhum aniversário esta semana'));
+    expect(message.center.dx, closeTo(panel.center.dx, 1), reason: 'centralizado');
+  });
+
+  testWidgets('ninguém hoje, mas alguém nos próximos dias: mostra as duas partes', (tester) async {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    await pumpHome(
+      tester,
+      DashboardViewModel(
+        birthdaysToday: const [],
+        birthdaysNext: [Birthday(name: 'Carla Dias', date: tomorrow, age: 27)],
+      ),
+    );
+
+    expect(find.text('Ninguém faz aniversário hoje.'), findsOneWidget);
+    expect(find.text('Carla Dias'), findsOneWidget);
+    expect(find.text('Nenhum aniversário esta semana'), findsNothing);
   });
 }

@@ -2,7 +2,7 @@
 
 Funcionalidades planejadas e ainda não iniciadas. Para tarefas técnicas do backend, ver `TASKS.md` no projeto e-Church.
 
-**Última atualização:** 2026-11-21
+**Última atualização:** 2026-11-20
 
 ---
 
@@ -41,7 +41,7 @@ O jar em produção é de antes do Spring Boot 4, do Hibernate 7 e do banco em i
 
 ## Usuários e acesso
 
-### Regras de acesso (decidido em 2026-11-21)
+### Regras de acesso (decidido em 2026-11-20)
 
 Os grupos funcionam como "cargos" e as permissões se **somam** (quem está em dois grupos tem o que os dois permitem). Cada permissão é conferida **na API** e no app (esconder ou desabilitar o que não pode), e entra junto com a tela que a usa. A primeira a aplicar tudo é a **tela de membros**.
 
@@ -75,7 +75,7 @@ O que o **Usuário** vê de cada membro:
 
 O que pode fazer em cada igreja alcançada vem dos grupos (ex.: secretaria da sede edita membros de qualquer filial).
 
-- **Feito na API (2026-11-21):** a regra vale para a lista de igrejas, o seletor da barra superior e os endpoints de **membros e apelos** (ler e alterar). As permissões por grupo também já valem na API: só Secretaria/Administrador alteram, só o Administrador exclui, e quem só consulta recebe o membro com os dados reduzidos da tabela acima (SEC-12b e SEC-13 no TASKS do backend).
+- **Feito na API (2026-11-20):** a regra vale para a lista de igrejas, o seletor da barra superior e os endpoints de **membros e apelos** (ler e alterar). As permissões por grupo também já valem na API: só Secretaria/Administrador alteram, só o Administrador exclui, e quem só consulta recebe o membro com os dados reduzidos da tabela acima (SEC-12b e SEC-13 no TASKS do backend).
 - **A fazer na tela de membros:** o app esconder ou desabilitar o que cada um não pode fazer, e mostrar os membros da igreja escolhida no seletor.
 - **Pedido de oração:** o Usuário poder registrar depende do cadastro de pedidos de oração, que ainda não existe na API (FEAT-9 no TASKS).
 
@@ -84,7 +84,7 @@ O que pode fazer em cada igreja alcançada vem dos grupos (ex.: secretaria da se
 Hoje a troca ainda não muda nenhum dado na tela, porque nenhuma tela lista dados por igreja.
 
 - **Membros:** a tela vai mostrar os membros da igreja escolhida no seletor.
-- **Painel inicial:** os números e atividades do dashboard (hoje fixos) vão carregar os dados da igreja escolhida: membros ativos, **aniversariantes do dia** (membros ativos que fazem aniversário hoje), crianças, pedidos de oração e últimos registros (FEAT-6 no TASKS do backend).
+- **Painel inicial (layout de 2026-11-20):** cards de Membros, Crianças e Pedido de Oração com o número de cada área (membros ativos, crianças cadastradas, pedidos novos); painel **Aniversariantes** (de hoje, com a idade, e dos próximos 7 dias; membros e crianças) ao lado dos **Últimos Registros**; faixa "Juntos na missão" no fim. Hoje os dados são fixos: vão carregar da API, da igreja escolhida (FEAT-6 no TASKS do backend).
 
 ### Grupos futuros
 
@@ -98,7 +98,22 @@ Hoje a troca ainda não muda nenhum dado na tela, porque nenhuma tela lista dado
 
 ### Pedidos de oração para o vaso de oração
 
-A secretaria gerencia os pedidos de oração e os imprime para colocar no vaso de oração. Criar o relatório de impressão dos pedidos (por período e por igreja, respeitando a igreja em uso).
+**Feito (2026-11-20):** tela "Pedido de Oração" (Secretaria → Pedido de Oração) e API (`/api/v1/prayer-requests`).
+
+Regras decididas:
+- **Origem:** a equipe registra pelo desktop; a **comunidade** vai enviar pelo **app mobile futuro**, sem login (qualquer pessoa pode pedir; a igreja é opcional). Pedido **sem igreja** fica com a **Sede**.
+- **Situações:** Novo → **No vaso** (fim do ciclo). Pedido que não condiz com a proposta (ofensas, propaganda) → **Rejeitado** (motivo opcional) → pode ser **excluído** da lista: nada é apagado, só o administrador vê os excluídos e pode restaurar.
+- **Secretaria:** no Novo, marca no vaso (um, vários, a página toda ou **todos os novos**), rejeita e edita (só os que a própria igreja registrou); no Rejeitado, exclui. **Depois do vaso, nada.**
+- **Administrador:** o mesmo, e ainda: no vaso, rejeitar ou **voltar para novo**; rejeitado, voltar para novo; excluído, restaurar; edita qualquer pedido registrado pela equipe.
+- **Pedidos da comunidade não são editados** (as palavras são de quem pediu); só vão para o vaso ou são rejeitados.
+- **Usuário de consulta:** registra e vê só os que ele registrou.
+- As ações de cada pedido vêm da API (`actions`): as regras ficam num lugar só e o app só mostra os botões permitidos.
+
+**A fazer:**
+- **"Marcar no vaso" deve imprimir:** ao marcar (selecionados ou todos), gerar a impressão dos pedidos para o vaso de oração (por igreja, respeitando a igreja em uso). Depende dos relatórios (FEAT-5 no TASKS); hoje a marcação é só de situação e a impressão é feita por fora.
+- **App mobile da comunidade:** usar o envio público (`POST /api/v1/public/prayer-requests` e `GET /api/v1/public/churches`). Já existe, mas **desligado** (`echurch.public-prayer-requests.enabled=false`; ligado só no perfil dev). Antes de ligar em produção, avaliar proteção extra contra spam (captcha ou verificação no app), além do limite de 5 envios por IP a cada 15 minutos.
+- Painel inicial: o card "Pedidos de Oração" e os "Últimos Registros" com os dados reais (FEAT-6).
+- Limpar os 1.817 registros antigos do site (spam) quando não precisar mais deles para testar o layout.
 
 ---
 
