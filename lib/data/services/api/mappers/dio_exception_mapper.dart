@@ -11,7 +11,7 @@ extension DioExceptionMapper on DioException {
   }
 
   AppException _fromStatus(int? status, StackTrace st) => switch (status) {
-    400 || 422 => ValidationException(serverMessage ?? 'Dados inválidos. Revise e tente novamente.', cause: this, stackTrace: st),
+    400 || 422 => ValidationException(serverMessage ?? 'Dados inválidos. Revise e tente novamente.', fields: _fieldErrors, cause: this, stackTrace: st),
     401 => UnauthorizedException(cause: this, stackTrace: st),
     403 when _errorCode == _firstAccessRequired => FirstAccessRequiredException(cause: this, stackTrace: st),
     403 => ForbiddenException(cause: this, stackTrace: st),
@@ -22,6 +22,15 @@ extension DioExceptionMapper on DioException {
   };
 
   static const _firstAccessRequired = 'FIRST_ACCESS_REQUIRED';
+
+  /// Erros por campo do formulário: `{"fields": {"cpf": "CPF Inválido"}}`.
+  Map<String, String> get _fieldErrors => switch (response?.data) {
+    {'fields': final Map<String, dynamic> fields} => {
+      for (final MapEntry(:key, :value) in fields.entries)
+        if (value is String) key: value,
+    },
+    _ => const {},
+  };
 
   /// Código de erro dos filtros de segurança (`ApiErrorResponse.error`).
   String? get _errorCode => switch (response?.data) {

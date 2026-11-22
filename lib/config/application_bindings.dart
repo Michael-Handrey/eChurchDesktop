@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:echurch_desktop/data/repositories/member/lookup_repository.dart';
+import 'package:echurch_desktop/data/repositories/member/lookup_repository_remote.dart';
 import 'package:echurch_desktop/data/repositories/member/member_repository.dart';
 import 'package:echurch_desktop/data/repositories/member/member_repository_remote.dart';
+import 'package:echurch_desktop/data/services/api/lookup_api.dart';
 import 'package:echurch_desktop/data/services/api/member_api.dart';
 import 'package:echurch_desktop/config/environment.dart';
 import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
@@ -82,6 +85,8 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
         Provider<ChurchRepository>(create: (context) => ChurchRepositoryRemote(churchApi: context.read())),
 
         Provider(create: (context) => MemberApi(context.read())),
+        Provider(create: (context) => LookupApi(context.read())),
+        Provider<LookupRepository>(create: (context) => LookupRepositoryRemote(api: context.read())),
         Provider<MemberRepository>(create: (context) => MemberRepositoryRemote(api: context.read())),
 
         Provider(create: (context) => PrayerRequestApi(context.read())),

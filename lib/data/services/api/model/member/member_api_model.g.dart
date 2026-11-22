@@ -171,6 +171,8 @@ MemberOptionsApiModel _$MemberOptionsApiModelFromJson(
   Map<String, dynamic> json,
 ) => MemberOptionsApiModel(
   ecclesiasticalRoles: (json['cargosEclesiasticos'] as List<dynamic>?)?.map((e) => MemberOptionApiModel.fromJson(e as Map<String, dynamic>)).toList(),
+  ministries: (json['ministeriosList'] as List<dynamic>?)?.map((e) => MemberOptionApiModel.fromJson(e as Map<String, dynamic>)).toList(),
+  nationalityOptions: (json['nationalityOptions'] as List<dynamic>?)?.map((e) => NationalityApiModel.fromJson(e as Map<String, dynamic>)).toList(),
 );
 
 MemberDeactivationInput _$MemberDeactivationInputFromJson(

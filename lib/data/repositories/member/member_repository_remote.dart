@@ -2,10 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/data/repositories/member/member_repository.dart';
 import 'package:echurch_desktop/data/services/api/mappers/dio_exception_mapper.dart';
+import 'package:echurch_desktop/data/services/api/mappers/duplicate_api_model_mapper.dart';
 import 'package:echurch_desktop/data/services/api/mappers/member_api_model_mapper.dart';
+import 'package:echurch_desktop/data/services/api/mappers/member_form_api_model_mapper.dart';
 import 'package:echurch_desktop/data/services/api/member_api.dart';
+import 'package:echurch_desktop/data/services/api/model/member/member_form_api_model.dart';
 import 'package:echurch_desktop/data/services/api/model/member/member_api_model.dart';
+import 'package:echurch_desktop/domain/models/member/duplicate.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
+import 'package:echurch_desktop/domain/models/member/member_form.dart';
 
 class MemberRepositoryRemote({required final MemberApi _api}) implements MemberRepository {
   @override
@@ -39,6 +44,26 @@ class MemberRepositoryRemote({required final MemberApi _api}) implements MemberR
 
   @override
   Future<Result<MemberDetails>> reactivate(int id) => _guard(() async => (await _api.reactivate(id)).toDomain());
+
+  @override
+  Future<Result<MemberFormOptions>> formOptions() => _guard(() async => (await _api.options()).toDomain());
+
+  @override
+  Future<Result<MemberDraft>> loadForEdit(int id) => _guard(() async => (await _api.findForEdit(id)).toDraft());
+
+  @override
+  Future<Result<int>> save(MemberDraft draft) => _guard(() async => (await _api.save(draft.toInput())).id);
+
+  @override
+  Future<Result<List<DuplicateGroup>>> duplicates() => _guard(() async => [for (final group in await _api.duplicates()) group.toDomain()]);
+
+  @override
+  Future<Result<void>> mergeDuplicates({required int keepId, required int removeId, required Set<MergeField> takeFromRemoved}) => _guard(() async {
+    await _api.mergeDuplicates(DuplicateMergeInput(keepId: keepId, removeId: removeId, takeFromRemoved: [for (final field in takeFromRemoved) field.apiValue]));
+  });
+
+  @override
+  Future<Result<void>> dismissDuplicate(int personId, int otherPersonId) => _guard(() => _api.dismissDuplicate(DuplicateDismissInput(personId: personId, otherPersonId: otherPersonId)));
 
   Future<Result<T>> _guard<T>(Future<T> Function() call) async {
     try {

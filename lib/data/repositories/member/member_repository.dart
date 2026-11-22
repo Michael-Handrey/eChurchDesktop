@@ -1,5 +1,7 @@
 import 'package:echurch_desktop/core/result.dart';
+import 'package:echurch_desktop/domain/models/member/duplicate.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
+import 'package:echurch_desktop/domain/models/member/member_form.dart';
 
 /// Membros da igreja. Erros de regra da API (motivo ou descrição em branco, membro já inativo...)
 /// chegam como `ValidationException` com a mensagem dela.
@@ -17,4 +19,23 @@ abstract interface class MemberRepository {
   Future<Result<MemberDetails>> deactivate(int id, {required DeactivationReason reason, required String description});
 
   Future<Result<MemberDetails>> reactivate(int id);
+
+  /// Listas do formulário: cargos, ministérios e nacionalidades.
+  Future<Result<MemberFormOptions>> formOptions();
+
+  /// Membro completo para editar (Secretaria/Administrador).
+  Future<Result<MemberDraft>> loadForEdit(int id);
+
+  /// Cadastra ([MemberDraft.id] nulo) ou altera; devolve o id. Erros por campo vêm em
+  /// `ValidationException.fields`, pelo nome do campo no pedido (`cpf`, `address.streetName`...).
+  Future<Result<int>> save(MemberDraft draft);
+
+  /// Cadastros duplicados no alcance de quem pede (Secretaria/Administrador).
+  Future<Result<List<DuplicateGroup>>> duplicates();
+
+  /// Junta: [keepId] fica (com os campos de [takeFromRemoved] vindos do outro); [removeId] é desativado.
+  Future<Result<void>> mergeDuplicates({required int keepId, required int removeId, required Set<MergeField> takeFromRemoved});
+
+  /// "Não são a mesma pessoa" (sugestão por nome e nascimento): não volta mais.
+  Future<Result<void>> dismissDuplicate(int personId, int otherPersonId);
 }

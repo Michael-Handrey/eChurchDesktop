@@ -11,10 +11,11 @@ import 'package:material_ui/material_ui.dart';
 /// (contato, cargo, ministérios e aniversário); Secretaria/Administrador, o cadastro completo
 /// e o histórico da desativação ([full]). Usado pela tela de Membros e pela busca rápida da barra
 /// superior: cada uma passa o seu comando de carregar.
-class const MemberDetailsDialog({super.key, required final Command1<MemberDetails, int> details, required final bool full, required final MemberRow member}) extends StatefulWidget {
-  static Future<void> show(BuildContext context, {required Command1<MemberDetails, int> details, required bool full, required MemberRow member}) => showDialog<void>(
+/// [onEdit]: mostra "Editar" (fecha a ficha e abre o formulário).
+class const MemberDetailsDialog({super.key, required final Command1<MemberDetails, int> details, required final bool full, required final MemberRow member, final VoidCallback? onEdit}) extends StatefulWidget {
+  static Future<void> show(BuildContext context, {required Command1<MemberDetails, int> details, required bool full, required MemberRow member, VoidCallback? onEdit}) => showDialog<void>(
     context: context,
-    builder: (_) => MemberDetailsDialog(details: details, full: full, member: member),
+    builder: (_) => MemberDetailsDialog(details: details, full: full, member: member, onEdit: onEdit),
   );
 
   @override
@@ -62,7 +63,18 @@ class _MemberDetailsDialogState extends State<MemberDetailsDialog> {
             ),
           },
         ),
-        actions: [FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Fechar'))],
+        actions: [
+          if (widget.onEdit case final onEdit?)
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onEdit();
+              },
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: const Text('Editar'),
+            ),
+          FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Fechar')),
+        ],
       ),
     );
   }

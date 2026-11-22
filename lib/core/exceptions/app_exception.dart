@@ -32,8 +32,11 @@ final class const TooManyAttemptsException(
   super.stackTrace,
 }) extends AppException;
 
+/// Dados recusados pela API (400/422). [fields]: erro de cada campo do formulário, quando a API
+/// manda (`{"fields": {"cpf": "CPF Inválido"}}`), pelo nome do campo no pedido.
 final class const ValidationException(
   final String message, {
+  final Map<String, String> fields = const {},
   super.cause,
   super.stackTrace,
 }) extends AppException;

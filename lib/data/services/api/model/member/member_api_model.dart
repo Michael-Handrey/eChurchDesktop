@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:echurch_desktop/data/services/api/model/member/member_form_api_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'member_api_model.g.dart';
@@ -150,13 +151,17 @@ class const MemberOptionApiModel({required final int id, final String? name}) ex
   List<Object?> get props => [id, name];
 }
 
-/// `GET /people/options`: aqui só os cargos (o resto é para o formulário de cadastro).
+/// `GET /people/options`: cargos e ministérios (id + nome) e nacionalidades (valor + nome).
 @JsonSerializable(createToJson: false)
-class const MemberOptionsApiModel({@JsonKey(name: 'cargosEclesiasticos') final List<MemberOptionApiModel>? ecclesiasticalRoles}) extends Equatable {
+class const MemberOptionsApiModel({
+  @JsonKey(name: 'cargosEclesiasticos') final List<MemberOptionApiModel>? ecclesiasticalRoles,
+  @JsonKey(name: 'ministeriosList') final List<MemberOptionApiModel>? ministries,
+  final List<NationalityApiModel>? nationalityOptions,
+}) extends Equatable {
   factory MemberOptionsApiModel.fromJson(Map<String, dynamic> json) => _$MemberOptionsApiModelFromJson(json);
 
   @override
-  List<Object?> get props => [ecclesiasticalRoles];
+  List<Object?> get props => [ecclesiasticalRoles, ministries, nationalityOptions];
 }
 
 /// Corpo de "desativar" (MemberDeactivationRequestDTO).

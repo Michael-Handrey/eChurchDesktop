@@ -6,7 +6,9 @@ import 'package:echurch_desktop/data/services/api/mappers/member_api_model_mappe
 import 'package:echurch_desktop/data/services/api/model/member/member_api_model.dart';
 import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
 import 'package:echurch_desktop/domain/models/church/church_summary.dart';
+import 'package:echurch_desktop/domain/models/member/duplicate.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
+import 'package:echurch_desktop/domain/models/member/member_form.dart';
 import 'package:echurch_desktop/ui/members/members_screen.dart';
 import 'package:echurch_desktop/ui/members/members_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,6 +58,27 @@ class _FakeMemberRepository implements MemberRepository {
     reactivated.add(id);
     return Result.ok(MemberDetails(id: id, name: '', status: MemberStatus.active));
   }
+
+  @override
+  Future<Result<MemberFormOptions>> formOptions() => throw UnimplementedError();
+
+  @override
+  Future<Result<MemberDraft>> loadForEdit(int id) => throw UnimplementedError();
+
+  @override
+  Future<Result<int>> save(MemberDraft draft) => throw UnimplementedError();
+
+  /// Casos de cadastro duplicado que a API devolveria (o botão aparece com a contagem).
+  List<DuplicateGroup> duplicateGroups = const [];
+
+  @override
+  Future<Result<List<DuplicateGroup>>> duplicates() async => Result.ok(duplicateGroups);
+
+  @override
+  Future<Result<void>> mergeDuplicates({required int keepId, required int removeId, required Set<MergeField> takeFromRemoved}) => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> dismissDuplicate(int personId, int otherPersonId) => throw UnimplementedError();
 }
 
 const _consulta = AuthSessionUser(login: 'joao', name: 'João', firstAccess: false, churchId: 1, roles: ['ROLE_USER']);
@@ -191,6 +214,7 @@ void main() {
       expect(find.text('Ana Souza'), findsOneWidget);
       expect(find.text('15/03'), findsOneWidget);
       expect(find.text('Desativar'), findsNWidgets(2));
+      expect(find.text('Editar'), findsNWidgets(2), reason: 'editar em cada linha');
 
       viewModel.setTab(MemberTab.inactive);
       await tester.runAsync(pumpEventQueue);
@@ -230,11 +254,36 @@ void main() {
       expect(tester.getCenter(find.text('Cargo').first).dx, closeTo(tester.getCenter(find.text('—').first).dx, 1), reason: 'título alinhado com a coluna');
     });
 
+    testWidgets('janela estreita: filtros vão para a segunda linha, sem estourar', (tester) async {
+      await pumpScreen(tester, _secretaria, reachable: churches);
+      final tabsTop = tester.getTopLeft(find.text('Ativos')).dy;
+      expect(tester.getTopLeft(find.text('Todas as igrejas')).dy, closeTo(tabsTop, 12), reason: 'larga: tudo numa linha');
+
+      tester.view.physicalSize = const Size(900, 900);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(find.text('Todas as igrejas')).dy, greaterThan(tabsTop + 20), reason: 'estreita: filtros embaixo');
+      expect(find.text('Ana Souza'), findsOneWidget);
+    });
+
+    testWidgets('com cadastros duplicados, aparece o botão com a contagem (só para quem gerencia)', (tester) async {
+      final viewModel = await pumpScreen(tester, _secretaria);
+      expect(find.textContaining('Cadastros duplicados'), findsNothing);
+
+      repository.duplicateGroups = const [
+        DuplicateGroup(kind: DuplicateKind.cpf, records: []),
+        DuplicateGroup(kind: DuplicateKind.cpf, records: []),
+      ];
+      await tester.runAsync(viewModel.loadDuplicateCount);
+      await tester.pumpAndSettle();
+      expect(find.text('Cadastros duplicados (2)'), findsOneWidget);
+    });
+
     testWidgets('quem só consulta não tem botões de desativar/reativar', (tester) async {
       await pumpScreen(tester, _consulta);
       expect(find.text('Ana Souza'), findsOneWidget);
       expect(find.text('Desativar'), findsNothing);
       expect(find.text('Reativar'), findsNothing);
+      expect(find.text('Editar'), findsNothing);
     });
 
     testWidgets('desativar só libera com motivo e descrição', (tester) async {

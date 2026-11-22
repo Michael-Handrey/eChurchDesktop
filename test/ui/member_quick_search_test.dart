@@ -1,7 +1,9 @@
 import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/data/repositories/member/member_repository.dart';
 import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
+import 'package:echurch_desktop/domain/models/member/duplicate.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
+import 'package:echurch_desktop/domain/models/member/member_form.dart';
 import 'package:echurch_desktop/ui/main/widgets/member_quick_search.dart';
 import 'package:echurch_desktop/ui/members/member_quick_search_viewmodel.dart';
 import 'package:flutter/services.dart';
@@ -40,6 +42,24 @@ class _FakeMemberRepository implements MemberRepository {
 
   @override
   Future<Result<MemberDetails>> reactivate(int id) => throw UnimplementedError();
+
+  @override
+  Future<Result<MemberFormOptions>> formOptions() => throw UnimplementedError();
+
+  @override
+  Future<Result<MemberDraft>> loadForEdit(int id) => throw UnimplementedError();
+
+  @override
+  Future<Result<int>> save(MemberDraft draft) => throw UnimplementedError();
+
+  @override
+  Future<Result<List<DuplicateGroup>>> duplicates() => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> mergeDuplicates({required int keepId, required int removeId, required Set<MergeField> takeFromRemoved}) => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> dismissDuplicate(int personId, int otherPersonId) => throw UnimplementedError();
 }
 
 const _consulta = AuthSessionUser(login: 'joao', name: 'João', firstAccess: false, churchId: 1, roles: ['ROLE_USER']);

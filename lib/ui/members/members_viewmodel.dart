@@ -47,11 +47,49 @@ class MembersViewModel({
   int? _loadedChurchId;
   Timer? _searchTimer;
 
+  /// Formulário aberto: ({id: nulo}) cadastra; ({id: 10}) edita. Nulo: mostra a lista.
+  ({int? id})? _form;
+
   @override
   void init() {
     _churchContext.addListener(_onChurchChanged);
     _onChurchChanged();
     unawaited(_loadRoles());
+    unawaited(loadDuplicateCount());
+  }
+
+  /// Quantos casos de cadastro duplicado existem (Secretaria/Administrador; mostra o botão).
+  int get duplicateCount => _duplicateCount;
+  var _duplicateCount = 0;
+
+  /// Tela de cadastros duplicados aberta no lugar da lista.
+  bool get showingDuplicates => _showingDuplicates;
+  var _showingDuplicates = false;
+
+  Future<void> loadDuplicateCount() async {
+    if (!canManage) return;
+    switch (await _repository.duplicates()) {
+      case Ok(:final value):
+        _duplicateCount = value.length;
+        notifyListeners();
+      case Error(:final error):
+        // Sem a contagem a lista funciona; só o botão não aparece.
+        _log.warning('Falha ao contar os cadastros duplicados', error: error, stackTrace: error.stackTrace);
+    }
+  }
+
+  void openDuplicates() {
+    if (!canManage) return;
+    _showingDuplicates = true;
+    notifyListeners();
+  }
+
+  /// Volta para a lista; juntou ou separou algo ([changed]): recarrega a lista e a contagem.
+  void closeDuplicates({bool changed = false}) {
+    _showingDuplicates = false;
+    notifyListeners();
+    unawaited(loadDuplicateCount());
+    if (changed) load.execute();
   }
 
   /// Secretaria/Administrador: desativam e reativam (a API confere de novo).
@@ -64,6 +102,29 @@ class MembersViewModel({
   /// Só quem alcança mais de uma igreja tem o "Todas as igrejas" (e a coluna Igreja com ele ligado).
   bool get canSeeAllChurches => _churchContext.churches.length > 1;
   bool get showChurchColumn => canSeeAllChurches && _allChurches;
+
+  ({int? id})? get form => _form;
+
+  /// Abre o cadastro de um membro novo (Secretaria/Administrador).
+  void openNew() {
+    if (!canManage) return;
+    _form = (id: null);
+    notifyListeners();
+  }
+
+  /// Abre a edição do membro (Secretaria/Administrador).
+  void openEdit(int id) {
+    if (!canManage) return;
+    _form = (id: id);
+    notifyListeners();
+  }
+
+  /// Volta para a lista; salvou ([savedId]): recarrega.
+  void closeForm({int? savedId}) {
+    _form = null;
+    notifyListeners();
+    if (savedId != null) load.execute();
+  }
 
   MemberTab get tab => _tab;
   String get text => _text;

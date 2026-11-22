@@ -19,6 +19,7 @@ class const MembersTableWidget({
   required final ValueChanged<MemberRow> onOpen,
   required final ValueChanged<MemberRow> onDeactivate,
   required final ValueChanged<MemberRow> onReactivate,
+  required final ValueChanged<MemberRow> onEdit,
 }) extends StatelessWidget {
   static const _minWidth = 960.0;
 
@@ -63,13 +64,13 @@ class const MembersTableWidget({
   /// colunas medirem igual nas duas tabelas).
   DataTable _table({required bool header}) {
     final columns = <DataColumn>[
-      const DataColumn(label: Text('Nome'), columnWidth: FlexColumnWidth(3)),
-      const DataColumn(label: Text('Cargo'), headingRowAlignment: .center, columnWidth: FlexColumnWidth(2)),
-      if (showChurch) const DataColumn(label: Text('Igreja'), headingRowAlignment: .center, columnWidth: FlexColumnWidth(2)),
-      const DataColumn(label: Text('Telefone'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(160), IntrinsicColumnWidth())),
-      const DataColumn(label: Text('Aniversário'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(120), IntrinsicColumnWidth())),
-      const DataColumn(label: Text('Situação'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(110), IntrinsicColumnWidth())),
-      if (canManage) const DataColumn(label: Text(''), columnWidth: MaxColumnWidth(FixedColumnWidth(172), IntrinsicColumnWidth())),
+      DataColumn(label: _heading('Nome'), columnWidth: FlexColumnWidth(3)),
+      DataColumn(label: _heading('Cargo'), headingRowAlignment: .center, columnWidth: FlexColumnWidth(2)),
+      if (showChurch) DataColumn(label: _heading('Igreja'), headingRowAlignment: .center, columnWidth: FlexColumnWidth(2)),
+      DataColumn(label: _heading('Telefone'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(160), IntrinsicColumnWidth())),
+      DataColumn(label: _heading('Aniversário'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(120), IntrinsicColumnWidth())),
+      DataColumn(label: _heading('Situação'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(110), IntrinsicColumnWidth())),
+      if (canManage) DataColumn(label: _heading(''), columnWidth: MaxColumnWidth(FixedColumnWidth(290), IntrinsicColumnWidth())),
     ];
     return DataTable(
       columnSpacing: 24,
@@ -97,23 +98,32 @@ class const MembersTableWidget({
                     ),
                     if (canManage)
                       DataCell(
-                        Align(
-                          alignment: .centerRight,
-                          child: switch (row.status) {
-                            MemberStatus.active => OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(minimumSize: const Size(124, 36), foregroundColor: AppColors.error),
-                              onPressed: () => onDeactivate(row),
-                              icon: const Icon(Icons.person_off_outlined, size: 18),
-                              label: const Text('Desativar'),
+                        Row(
+                          mainAxisAlignment: .end,
+                          spacing: 8,
+                          children: [
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(minimumSize: const Size(104, 36)),
+                              onPressed: () => onEdit(row),
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              label: const Text('Editar'),
                             ),
-                            MemberStatus.inactive => OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(minimumSize: const Size(124, 36)),
-                              onPressed: () => onReactivate(row),
-                              icon: const Icon(Icons.restore, size: 18),
-                              label: const Text('Reativar'),
-                            ),
-                            MemberStatus.other => const SizedBox.shrink(),
-                          },
+                            switch (row.status) {
+                              MemberStatus.active => OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(minimumSize: const Size(124, 36), foregroundColor: AppColors.error),
+                                onPressed: () => onDeactivate(row),
+                                icon: const Icon(Icons.person_off_outlined, size: 18),
+                                label: const Text('Desativar'),
+                              ),
+                              MemberStatus.inactive => OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(minimumSize: const Size(124, 36)),
+                                onPressed: () => onReactivate(row),
+                                icon: const Icon(Icons.restore, size: 18),
+                                label: const Text('Reativar'),
+                              ),
+                              MemberStatus.other => const SizedBox.shrink(),
+                            },
+                          ],
                         ),
                       ),
                   ],
@@ -133,3 +143,8 @@ class const _Text(final String text, {final bool bold = false, final bool muted 
     style: TextStyle(fontWeight: bold ? FontWeight.w600 : null, color: muted ? AppColors.textSecondary : AppColors.textPrimary),
   );
 }
+
+/// Título da coluna: corta com "…" se a coluna ficar estreita (em vez de estourar).
+Widget _heading(String text) => Flexible(
+  child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+);

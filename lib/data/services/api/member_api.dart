@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:echurch_desktop/data/services/api/model/member/member_api_model.dart';
+import 'package:echurch_desktop/data/services/api/model/member/member_form_api_model.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'member_api.g.dart';
@@ -25,6 +26,26 @@ abstract class MemberApi {
 
   @GET('/v1/people/{id}')
   Future<MemberDetailsApiModel> findById(@Path('id') int id);
+
+  /// O mesmo detalhe, com os ids e valores crus para preencher o formulário (Secretaria/Administrador).
+  @GET('/v1/people/{id}')
+  Future<MemberEditApiModel> findForEdit(@Path('id') int id);
+
+  /// Sem `id` cadastra; com `id` altera. Erros por campo: 400 `{"fields": {...}}`.
+  @POST('/v1/people')
+  Future<MemberEditApiModel> save(@Body() MemberInput request);
+
+  /// Cadastros duplicados (Secretaria/Administrador): grupos com a mesma pessoa.
+  @GET('/v1/people/duplicates')
+  Future<List<DuplicateGroupApiModel>> duplicates();
+
+  /// Junta dois cadastros: um fica, o outro é desativado como "Cadastro duplicado".
+  @POST('/v1/people/duplicates/merge')
+  Future<MemberEditApiModel> mergeDuplicates(@Body() DuplicateMergeInput request);
+
+  /// "Não são a mesma pessoa" (sugestões por nome e nascimento).
+  @POST('/v1/people/duplicates/dismiss')
+  Future<void> dismissDuplicate(@Body() DuplicateDismissInput request);
 
   @PUT('/v1/people/{id}/deactivate')
   Future<MemberDetailsApiModel> deactivate(@Path('id') int id, @Body() MemberDeactivationInput request);
