@@ -4,6 +4,7 @@ import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
 import 'package:echurch_desktop/ui/main/widgets/sidebar.dart';
 import 'package:echurch_desktop/ui/members/members_bindings.dart';
 import 'package:echurch_desktop/ui/members/members_screen.dart';
+import 'package:echurch_desktop/ui/ministries/ministries_screen.dart';
 import 'package:echurch_desktop/ui/prayer_requests/prayer_requests_bindings.dart';
 import 'package:echurch_desktop/ui/prayer_requests/prayer_requests_screen.dart';
 import 'package:echurch_desktop/ui/main/widgets/top_header.dart';
@@ -47,6 +48,9 @@ class MainScreen extends StatelessWidget {
     }
     if (selected == DashboardViewModel.membersNavItem) {
       return MembersBindings(screenBuilder: (context) => MembersScreen(viewModel: context.read()));
+    }
+    if (selected == DashboardViewModel.ministriesNavItem) {
+      return MinistriesBindings(screenBuilder: (context) => MinistriesScreen(viewModel: context.read()));
     }
     if (selected == DashboardViewModel.prayerRequestsNavItem) {
       return PrayerRequestsBindings(screenBuilder: (context) => PrayerRequestsScreen(viewModel: context.read()));

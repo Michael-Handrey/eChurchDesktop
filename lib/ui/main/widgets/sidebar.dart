@@ -130,8 +130,8 @@ class SidebarNavListWidget extends StatelessWidget {
                 SidebarSubmenuItemWidget(
                   icon: Icons.diversity_3_outlined,
                   label: 'Ministérios',
-                  isSelected: viewModel.selectedNavItem == 'ministerios',
-                  onTap: () => viewModel.selectNavItem('ministerios'),
+                  isSelected: viewModel.selectedNavItem == DashboardViewModel.ministriesNavItem,
+                  onTap: () => viewModel.selectNavItem(DashboardViewModel.ministriesNavItem),
                 ),
                 SidebarSubmenuItemWidget(
                   icon: Icons.volunteer_activism_outlined,

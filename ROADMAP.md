@@ -95,6 +95,15 @@ As telas de **Membros** e **Pedidos de Oração** já seguem a igreja escolhida.
 
 ---
 
+## Ministérios
+
+Hoje (banco local): 10 ministérios, todos da Sede, cada um com o **tipo** ("Ministério de Jovens") e o **nome próprio** ("Filhos da Promessa"), líder e vice-líder; 169 participações de membros.
+
+- **Etapa 1 (feita, 2026-11-22):** tela Secretaria > Ministérios: lista da igreja escolhida (tipo, nome, líder, vice-líder, número de membros); cadastrar e editar (tipo, nome, igreja, líder e vice-líder buscados entre os membros; líder e vice entram como membros do ministério); **desativar em vez de excluir** (some do formulário do membro; reativar volta); ver os membros do ministério, incluir e tirar. Secretaria/Administrador alteram; quem só consulta vê.
+- **Etapa 2:** perfil **Líder de ministério** (vê só os membros do próprio ministério; FEAT-8).
+- **A decidir:** Ministério Infantil (0–10) e Avivah (11–17): os membros entram **automaticamente pela idade** ou são marcados à mão? (ver [docs/PESSOAS_E_FAMILIA.md](docs/PESSOAS_E_FAMILIA.md)).
+- **Depois:** funções ministeriais (27 cadastradas, só 5 em uso).
+
 ## Relatórios & Documentos
 
 ### Pedidos de oração para o vaso de oração

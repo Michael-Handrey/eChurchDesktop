@@ -13,6 +13,7 @@ class DashboardViewModel extends ChangeNotifier {
   /// Item da sidebar que abre a tela de usuários (só administrador).
   static const usersNavItem = 'usuarios';
   static const membersNavItem = 'membros';
+  static const ministriesNavItem = 'ministerios';
   static const prayerRequestsNavItem = 'oracao';
 
   String _selectedNavItem = 'inicio';
