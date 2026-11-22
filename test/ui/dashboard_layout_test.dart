@@ -45,6 +45,17 @@ void main() {
     expect(heights, hasLength(1), reason: 'os três cards com a mesma altura');
   });
 
+  testWidgets('janela pequena: cards estreitos levam o número para baixo do título, sem estourar', (tester) async {
+    await pumpHome(tester);
+    expect(find.text('248'), findsOneWidget, reason: 'larga: número à direita');
+
+    // Conteúdo de uma janela 960×640 (menos o menu lateral de 300).
+    tester.view.physicalSize = const Size(660, 1100);
+    await tester.pumpAndSettle();
+    expect(find.text('248 membros ativos', findRichText: true), findsOneWidget);
+    expect(find.text('Últimos Registros'), findsOneWidget);
+  });
+
   testWidgets('aniversariantes e últimos registros lado a lado, com a mesma altura', (tester) async {
     await pumpHome(tester);
 

@@ -8,24 +8,38 @@ import 'package:provider/provider.dart';
 class TopHeaderWidget extends StatelessWidget {
   const TopHeaderWidget({super.key});
 
+  /// Abaixo desta largura, o usuário aparece só como avatar.
+  static const compactWidth = 1000.0;
+
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 64,
       color: AppColors.primary,
       padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Row(
-        children: const [
-          Expanded(child: MemberQuickSearchWidget()),
-          SizedBox(width: 24),
-          NotificationBadgeWidget(),
-          SizedBox(width: 20),
-          ChurchSelectorWidget(),
-          SizedBox(width: 16),
-          SizedBox(height: 32, child: VerticalDivider(color: AppColors.searchBarBorder, width: 1, thickness: 1)),
-          SizedBox(width: 16),
-          UserMenuWidget(),
-        ],
+      // Tela estreita (notebook com zoom, janela pequena): o usuário vira só o avatar, para a busca caber.
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < compactWidth;
+          return Row(
+            children: [
+              const Expanded(child: MemberQuickSearchWidget()),
+              SizedBox(width: compact ? 12 : 24),
+              const NotificationBadgeWidget(),
+              SizedBox(width: compact ? 8 : 20),
+              // Largura máxima (o nome corta com "…"); sem Flexible, para não dividir a sobra com a busca
+              // e o usuário continuar encostado à direita.
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: compact ? 180 : 280),
+                child: const ChurchSelectorWidget(),
+              ),
+              SizedBox(width: compact ? 8 : 16),
+              const SizedBox(height: 32, child: VerticalDivider(color: AppColors.searchBarBorder, width: 1, thickness: 1)),
+              SizedBox(width: compact ? 8 : 16),
+              UserMenuWidget(compact: compact),
+            ],
+          );
+        },
       ),
     );
   }
@@ -81,9 +95,13 @@ class ChurchSelectorWidget extends StatelessWidget {
         children: [
           const Icon(Icons.church_outlined, color: AppColors.textOnPrimaryMuted, size: 18),
           const SizedBox(width: 8),
-          Text(
-            selected?.name ?? '—',
-            style: const TextStyle(color: AppColors.textOnPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+          Flexible(
+            child: Text(
+              selected?.name ?? '—',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppColors.textOnPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+            ),
           ),
           if (churchContext.canSwitch) ...[
             const SizedBox(width: 6),

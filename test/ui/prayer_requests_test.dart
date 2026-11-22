@@ -254,6 +254,14 @@ void main() {
       expect(tester.getTopLeft(find.text('Quem pediu').first).dx, closeTo(tester.getTopLeft(find.text('Pessoa 1')).dx, 1), reason: 'título alinhado com a coluna');
     });
 
+    testWidgets('janela estreita: filtros vão para a segunda linha, sem estourar', (tester) async {
+      await pumpScreen(tester, _secretaria, reachable: churches);
+      tester.view.physicalSize = const Size(1000, 900);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(find.text('Todas as igrejas')).dy, greaterThan(tester.getTopLeft(find.text('Novos')).dy + 20));
+      expect(find.text('Ana Souza'), findsOneWidget);
+    });
+
     testWidgets('secretaria vê seleção e só os botões que a API permite', (tester) async {
       await pumpScreen(tester, _secretaria);
       expect(find.text('Ana Souza'), findsOneWidget);

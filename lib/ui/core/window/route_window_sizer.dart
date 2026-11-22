@@ -27,12 +27,18 @@ class _RouteWindowSizerState extends State<RouteWindowSizer> {
   /// O Windows dispara vários eventos seguidos numa mesma mudança de monitor.
   static const _displayChangeDebounce = Duration(milliseconds: 300);
 
+  /// Depois de ocupar a tela, confere de novo nestes momentos: se a janela não estiver na área útil
+  /// (o Windows ignorou o pedido, a janela ainda não estava pronta...), reaplica. O sistema deve
+  /// sempre abrir no tamanho máximo do monitor.
+  static const _checkMainAfter = [Duration(milliseconds: 300), Duration(milliseconds: 1500)];
+
   final _log = AppLogger('RouteWindowSizer');
 
   /// A janela começa no tamanho do login (`AppWindow.initialize`).
   var _fullScreen = false;
   int? _displayListener;
   Timer? _displayChange;
+  final _checks = <Timer>[];
 
   GoRouterDelegate get _delegate => widget.router.routerDelegate;
 
@@ -52,7 +58,26 @@ class _RouteWindowSizerState extends State<RouteWindowSizer> {
     if (fullScreen == _fullScreen) return;
 
     _fullScreen = fullScreen;
-    fullScreen ? AppWindow.showMain() : AppWindow.showLogin();
+    _cancelChecks();
+    if (fullScreen) {
+      AppWindow.showMain();
+      for (final delay in _checkMainAfter) {
+        _checks.add(
+          Timer(delay, () {
+            if (mounted && _fullScreen) AppWindow.refreshMain();
+          }),
+        );
+      }
+    } else {
+      AppWindow.showLogin();
+    }
+  }
+
+  void _cancelChecks() {
+    for (final timer in _checks) {
+      timer.cancel();
+    }
+    _checks.clear();
   }
 
   void _listenDisplays() {
@@ -74,6 +99,7 @@ class _RouteWindowSizerState extends State<RouteWindowSizer> {
   void dispose() {
     _delegate.removeListener(_apply);
     _displayChange?.cancel();
+    _cancelChecks();
     if (_displayListener case final id?) {
       DisplayManager.instance.removeListener(id);
     }

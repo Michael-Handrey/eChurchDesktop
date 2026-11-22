@@ -33,9 +33,13 @@ class BirthdaysSectionWidget extends StatelessWidget {
             height: DashboardLowerPanelsWidget.headerHeight,
             child: Row(
               children: [
-                const Text(
-                  'Aniversariantes',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+                const Flexible(
+                  child: Text(
+                    'Aniversariantes',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 if (today.isNotEmpty)

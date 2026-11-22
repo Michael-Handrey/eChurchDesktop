@@ -163,67 +163,90 @@ class const _Header({required final PrayerRequestsViewModel viewModel, required 
 }
 
 class const _Toolbar({required final PrayerRequestsViewModel viewModel, required final VoidCallback onMarkSelected, required final VoidCallback onMarkAll}) extends StatelessWidget {
+  /// Abaixo desta largura, os filtros vão para uma segunda linha.
+  static const twoLinesBelow = 1000.0;
+
   @override
   Widget build(BuildContext context) {
     final selected = viewModel.selectedIds.length;
     final busy = viewModel.markInVase.running || viewModel.markAllInVase.running;
 
-    return Row(
+    final tabs = SegmentedButton<PrayerRequestTab>(
+      showSelectedIcon: false,
+      segments: [for (final tab in viewModel.tabs) ButtonSegment(value: tab, label: Text(PrayerRequestsViewModel.tabLabel(tab)))],
+      selected: {viewModel.tab},
+      onSelectionChanged: (selection) => viewModel.setTab(selection.first),
+    );
+    // Filtros à direita; sem espaço, a busca encolhe.
+    final filters = Row(
+      mainAxisAlignment: .end,
       spacing: 8,
       children: [
-        SegmentedButton<PrayerRequestTab>(
-          showSelectedIcon: false,
-          segments: [for (final tab in viewModel.tabs) ButtonSegment(value: tab, label: Text(PrayerRequestsViewModel.tabLabel(tab)))],
-          selected: {viewModel.tab},
-          onSelectionChanged: (selection) => viewModel.setTab(selection.first),
-        ),
-        // Filtros à direita; sem espaço (janela estreita), a busca encolhe.
-        Expanded(
-          child: Row(
-            mainAxisAlignment: .end,
-            spacing: 8,
-            children: [
-              if (viewModel.canSeeAllChurches) AllChurchesChip(selected: viewModel.allChurches, onChanged: viewModel.setAllChurches),
-              if (selected > 0)
-                FilledButton.tonalIcon(
-                  onPressed: busy ? null : onMarkSelected,
-                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
-                  label: Text(selected == 1 ? 'Marcar 1 no vaso' : 'Marcar $selected no vaso'),
-                )
-              else if (viewModel.canMarkAll)
-                OutlinedButton.icon(
-                  onPressed: busy ? null : onMarkAll,
-                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
-                  label: Text('Marcar todos no vaso (${viewModel.newCount})'),
+        if (viewModel.canSeeAllChurches) AllChurchesChip(selected: viewModel.allChurches, onChanged: viewModel.setAllChurches),
+        if (selected > 0)
+          FilledButton.tonalIcon(
+            onPressed: busy ? null : onMarkSelected,
+            icon: const Icon(Icons.inventory_2_outlined, size: 18),
+            label: Text(selected == 1 ? 'Marcar 1 no vaso' : 'Marcar $selected no vaso'),
+          )
+        else if (viewModel.canMarkAll)
+          OutlinedButton.icon(
+            onPressed: busy ? null : onMarkAll,
+            icon: const Icon(Icons.inventory_2_outlined, size: 18),
+            label: Text('Marcar todos no vaso (${viewModel.newCount})'),
+          ),
+        Flexible(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260),
+            child: TextField(
+              onChanged: viewModel.setText,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'Buscar por nome ou pedido',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                filled: true,
+                fillColor: AppColors.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 260),
-                  child: TextField(
-                    onChanged: viewModel.setText,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: 'Buscar por nome ou pedido',
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      filled: true,
-                      fillColor: AppColors.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.border),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: AppColors.border),
-                      ),
-                    ),
-                  ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
               ),
-            ],
+            ),
           ),
         ),
-        IconButton(tooltip: 'Atualizar lista', onPressed: viewModel.load.running ? null : viewModel.load.execute, icon: const Icon(Icons.refresh)),
       ],
+    );
+    final refresh = IconButton(tooltip: 'Atualizar lista', onPressed: viewModel.load.running ? null : viewModel.load.execute, icon: const Icon(Icons.refresh));
+
+    // Tela estreita: abas e atualizar em cima, filtros embaixo.
+    return LayoutBuilder(
+      builder: (context, constraints) => constraints.maxWidth >= twoLinesBelow
+          ? Row(
+              spacing: 8,
+              children: [
+                tabs,
+                Expanded(child: filters),
+                refresh,
+              ],
+            )
+          : Column(
+              crossAxisAlignment: .stretch,
+              spacing: 12,
+              children: [
+                Row(
+                  children: [
+                    Flexible(child: tabs),
+                    const Spacer(),
+                    refresh,
+                  ],
+                ),
+                filters,
+              ],
+            ),
     );
   }
 }

@@ -22,7 +22,7 @@ class const PrayerRequestsTableWidget({
   required final void Function(PrayerRequest request, bool selected) onSelect,
   required final void Function(PrayerRequest request, PrayerRequestAction action) onAction,
 }) extends StatelessWidget {
-  static const _minWidth = 1100.0;
+  static const _minWidth = 1250.0;
 
   @override
   Widget build(BuildContext context) {
@@ -74,14 +74,14 @@ class const PrayerRequestsTableWidget({
                 )
               : const SizedBox.shrink(),
         ),
-      const DataColumn(label: Text('Data'), columnWidth: FixedColumnWidth(110)),
-      const DataColumn(label: Text('Quem pediu'), columnWidth: FlexColumnWidth(2)),
-      if (showChurch) const DataColumn(label: Text('Igreja'), columnWidth: FlexColumnWidth(2)),
-      const DataColumn(label: Text('Pedido'), columnWidth: FlexColumnWidth(5)),
-      const DataColumn(label: Text('Situação'), columnWidth: MaxColumnWidth(FixedColumnWidth(120), IntrinsicColumnWidth())),
+      DataColumn(label: _heading('Data'), columnWidth: FixedColumnWidth(110)),
+      DataColumn(label: _heading('Quem pediu'), columnWidth: FlexColumnWidth(2)),
+      if (showChurch) DataColumn(label: _heading('Igreja'), columnWidth: FlexColumnWidth(2)),
+      DataColumn(label: _heading('Pedido'), columnWidth: FlexColumnWidth(5)),
+      DataColumn(label: _heading('Situação'), columnWidth: MaxColumnWidth(FixedColumnWidth(120), IntrinsicColumnWidth())),
       if (canManage) ...[
-        const DataColumn(label: Text('Registrado por'), columnWidth: FlexColumnWidth(2)),
-        const DataColumn(label: Text(''), columnWidth: MaxColumnWidth(FixedColumnWidth(320), IntrinsicColumnWidth())),
+        DataColumn(label: _heading('Registrado por'), columnWidth: FlexColumnWidth(2)),
+        DataColumn(label: _heading(''), columnWidth: MaxColumnWidth(FixedColumnWidth(320), IntrinsicColumnWidth())),
       ],
     ];
     return DataTable(
@@ -156,3 +156,8 @@ class const _Actions({required final PrayerRequest request, required final void 
     );
   }
 }
+
+/// Título da coluna: corta com "…" se a coluna ficar estreita (em vez de estourar).
+Widget _heading(String text) => Flexible(
+  child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+);

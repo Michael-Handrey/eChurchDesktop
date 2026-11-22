@@ -10,7 +10,10 @@ enum _UserAction { changePassword, logout }
 /// Usuário logado no canto da barra superior: avatar, nome e perfil, com o menu
 /// "Alterar minha senha" e "Sair".
 class UserMenuWidget extends StatelessWidget {
-  const UserMenuWidget({super.key});
+  const UserMenuWidget({super.key, this.compact = false});
+
+  /// Tela estreita: só o avatar (o nome e o perfil aparecem no menu e no tooltip).
+  final bool compact;
 
   /// Perfil principal para mostrar sob o nome (o mais amplo que o usuário tiver).
   static String profileOf(AuthSessionUser? user) {
@@ -36,7 +39,7 @@ class UserMenuWidget extends StatelessWidget {
     final user = session.user;
 
     return PopupMenuButton<_UserAction>(
-      tooltip: 'Minha conta',
+      tooltip: compact ? '${user?.name ?? ''} · ${profileOf(user)}' : 'Minha conta',
       position: PopupMenuPosition.under,
       offset: const Offset(0, 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -80,21 +83,23 @@ class UserMenuWidget extends StatelessWidget {
                       style: const TextStyle(color: AppColors.primary, fontSize: 12.5, fontWeight: FontWeight.w700),
                     ),
             ),
-            const SizedBox(width: 10),
-            // Nome inteiro: a largura acompanha o nome (a busca, à esquerda, é quem cede espaço).
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user?.name ?? '',
-                  maxLines: 1,
-                  softWrap: false,
-                  style: const TextStyle(color: AppColors.textOnPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
-                ),
-                Text(profileOf(user), style: const TextStyle(color: AppColors.textOnPrimaryMuted, fontSize: 11.5)),
-              ],
-            ),
+            if (!compact) ...[
+              const SizedBox(width: 10),
+              // Nome inteiro: a largura acompanha o nome (a busca, à esquerda, é quem cede espaço).
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user?.name ?? '',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: const TextStyle(color: AppColors.textOnPrimary, fontSize: 13.5, fontWeight: FontWeight.w600),
+                  ),
+                  Text(profileOf(user), style: const TextStyle(color: AppColors.textOnPrimaryMuted, fontSize: 11.5)),
+                ],
+              ),
+            ],
             const SizedBox(width: 6),
             const Icon(Icons.keyboard_arrow_down, color: AppColors.textOnPrimary, size: 18),
           ],

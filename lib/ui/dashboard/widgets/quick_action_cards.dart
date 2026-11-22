@@ -81,6 +81,9 @@ class QuickActionCardWidget extends StatefulWidget {
 }
 
 class _QuickActionCardWidgetState extends State<QuickActionCardWidget> {
+  /// Abaixo desta largura (por dentro do card), o número sai da direita e vai para baixo do título.
+  static const narrowWidth = 300.0;
+
   bool _isHovered = false;
 
   @override
@@ -102,62 +105,121 @@ class _QuickActionCardWidgetState extends State<QuickActionCardWidget> {
             border: Border.all(color: _isHovered ? widget.iconColor.withValues(alpha: 0.5) : AppColors.border, width: 1.2),
             boxShadow: _isHovered ? [BoxShadow(color: widget.iconColor.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 4))] : const [],
           ),
-          child: Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) => constraints.maxWidth < narrowWidth ? _narrow() : _wide(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Card estreito: ícone menor e "248 membros ativos" no lugar da descrição.
+  Widget _narrow() {
+    final clickable = widget.onTap != null;
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(color: widget.iconBgColor, shape: BoxShape.circle),
+          child: Icon(widget.icon, color: widget.iconColor, size: 22),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 4,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(color: widget.iconBgColor, shape: BoxShape.circle),
-                child: Icon(widget.icon, color: widget.iconColor, size: 26),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 4,
-                  children: [
-                    Row(
-                      spacing: 6,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            widget.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        if (clickable) Icon(Icons.arrow_forward, color: _isHovered ? widget.iconColor : AppColors.textMuted, size: 16),
-                      ],
-                    ),
-                    Text(
-                      widget.description,
+              Row(
+                spacing: 6,
+                children: [
+                  Flexible(
+                    child: Text(
+                      widget.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700),
                     ),
+                  ),
+                  if (clickable) Icon(Icons.arrow_forward, color: _isHovered ? widget.iconColor : AppColors.textMuted, size: 16),
+                ],
+              ),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '${widget.stat.count} ',
+                      style: TextStyle(color: widget.iconColor, fontSize: 18, fontWeight: FontWeight.w800),
+                    ),
+                    TextSpan(text: widget.stat.label),
                   ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Número principal da área, à direita.
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${widget.stat.count}',
-                    style: TextStyle(color: widget.iconColor, fontSize: 28, fontWeight: FontWeight.w800, height: 1.1),
-                  ),
-                  Text(
-                    widget.stat.label,
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
-                  ),
-                ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5, fontWeight: FontWeight.w500),
               ),
             ],
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _wide() {
+    final clickable = widget.onTap != null;
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(color: widget.iconBgColor, shape: BoxShape.circle),
+          child: Icon(widget.icon, color: widget.iconColor, size: 26),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 4,
+            children: [
+              Row(
+                spacing: 6,
+                children: [
+                  Flexible(
+                    child: Text(
+                      widget.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  if (clickable) Icon(Icons.arrow_forward, color: _isHovered ? widget.iconColor : AppColors.textMuted, size: 16),
+                ],
+              ),
+              Text(
+                widget.description,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Número principal da área, à direita.
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${widget.stat.count}',
+              style: TextStyle(color: widget.iconColor, fontSize: 28, fontWeight: FontWeight.w800, height: 1.1),
+            ),
+            Text(
+              widget.stat.label,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

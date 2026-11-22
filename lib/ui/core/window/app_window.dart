@@ -48,7 +48,7 @@ final class AppWindow._() {
     final area = _workAreaOf(window);
     if (area == null || window.bounds.toRect() == area) return;
 
-    _log.info('Área útil do monitor mudou; reajustando a janela');
+    _log.info('Janela fora da área útil do monitor (${window.bounds.toRect()} × $area); reajustando');
     _fix(window, area.size, () => window.bounds = area.toNative());
     window.isMovable = false;
   });
