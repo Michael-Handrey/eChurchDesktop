@@ -260,7 +260,6 @@ class MemberFormControllers {
   final birthDate = TextEditingController();
   final cpf = TextEditingController();
   final rg = TextEditingController();
-  final spouseName = TextEditingController();
   final fatherName = TextEditingController();
   final motherName = TextEditingController();
   final postalCode = TextEditingController();
@@ -274,7 +273,7 @@ class MemberFormControllers {
   final acceptedJesusDate = TextEditingController();
   final notes = TextEditingController();
 
-  List<TextEditingController> get _all => [name, birthDate, cpf, rg, spouseName, fatherName, motherName, postalCode, streetName, streetNumber, complement, phone, secondaryPhone, email, baptismDate, acceptedJesusDate, notes];
+  List<TextEditingController> get _all => [name, birthDate, cpf, rg, fatherName, motherName, postalCode, streetName, streetNumber, complement, phone, secondaryPhone, email, baptismDate, acceptedJesusDate, notes];
 
   void copyFrom(MemberDraft draft) {
     name.text = draft.name;
@@ -282,7 +281,6 @@ class MemberFormControllers {
     final cpfDigits = draft.cpf.replaceAll(RegExp(r'\D'), '');
     cpf.text = cpfDigits.length == 11 ? MaskFormatter.apply('###.###.###-##', cpfDigits) : draft.cpf;
     rg.text = draft.rg;
-    spouseName.text = draft.spouseName;
     fatherName.text = draft.fatherName;
     motherName.text = draft.motherName;
     final cep = draft.postalCode.replaceAll(RegExp(r'\D'), '');

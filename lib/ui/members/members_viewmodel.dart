@@ -56,6 +56,7 @@ class MembersViewModel({
     _onChurchChanged();
     unawaited(_loadRoles());
     unawaited(loadDuplicateCount());
+    unawaited(loadSpouseReviewCount());
   }
 
   /// Quantos casos de cadastro duplicado existem (Secretaria/Administrador; mostra o botão).
@@ -76,6 +77,39 @@ class MembersViewModel({
         // Sem a contagem a lista funciona; só o botão não aparece.
         _log.warning('Falha ao contar os cadastros duplicados', error: error, stackTrace: error.stackTrace);
     }
+  }
+
+  /// Quantos cônjuges faltam revisar (Secretaria/Administrador; mostra o botão).
+  int get spouseReviewCount => _spouseReviewCount;
+  var _spouseReviewCount = 0;
+
+  /// Revisão de cônjuges aberta no lugar da lista.
+  bool get showingSpouseReview => _showingSpouseReview;
+  var _showingSpouseReview = false;
+
+  Future<void> loadSpouseReviewCount() async {
+    if (!canManage) return;
+    switch (await _repository.spouseReview()) {
+      case Ok(:final value):
+        _spouseReviewCount = value.pending;
+        notifyListeners();
+      case Error(:final error):
+        _log.warning('Falha ao contar os cônjuges para revisar', error: error, stackTrace: error.stackTrace);
+    }
+  }
+
+  void openSpouseReview() {
+    if (!canManage) return;
+    _showingSpouseReview = true;
+    notifyListeners();
+  }
+
+  /// Volta para a lista; vinculou algo ([changed]): recarrega a lista e a contagem.
+  void closeSpouseReview({bool changed = false}) {
+    _showingSpouseReview = false;
+    notifyListeners();
+    unawaited(loadSpouseReviewCount());
+    if (changed) load.execute();
   }
 
   void openDuplicates() {

@@ -178,8 +178,8 @@ Uma ficha "Família Santos Augusto" com a lista de pessoas e o papel de cada uma
 | 3 | Situações: Membro (a partir de 12) e **Visitante** | sim | nome "Visitante" definido; regra a confirmar |
 | 4 | Responsáveis obrigatórios para menores de 18 (inclusive membros) | sim; aos 18 vira família | a confirmar |
 | 5 | Vínculo por responsáveis, não cadastro de família | sim | a confirmar |
-| 6 | Cônjuge como vínculo (`spouse` + `spouse_name`) | sim | **confirmado** (2026-11-22); coluna `spouse` |
-| 7 | Vincular casais existentes por rotina da secretaria, com confiança pelo endereço (regra da seção 6) | sim | **confirmado** (2026-11-22) |
+| 6 | Cônjuge como vínculo (`spouse` + `spouse_name`) | sim | **feito** (2026-11-22): coluna `spouse`; campo Cônjuge do formulário busca membros ou usa só o nome |
+| 7 | Vincular casais existentes por rotina da secretaria, com confiança pelo endereço (regra da seção 6) | sim | **feito** (2026-11-22): Membros > "Revisar cônjuges" (em lote, um a um, sem sugestão); falta a secretaria revisar |
 | 10 | Cadastros duplicados (mesma pessoa com dois registros): como juntar | rotina própria, antes de vincular os cônjuges; depois, CPF único no banco (DATA-1 no TASKS da API: 9 CPFs repetidos no banco local) | **feito** (2026-11-22): tela Membros > "Cadastros duplicados"; falta a secretaria juntar os casos |
 | 8 | Campos extras da criança (saúde, autorizações, retirada) | depende da conversa com a secretaria | aberto |
 | 9 | O que fazer com visitantes que completam 18 anos | aviso para a secretaria decidir | aberto |

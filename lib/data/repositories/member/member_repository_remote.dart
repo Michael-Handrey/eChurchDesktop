@@ -3,14 +3,17 @@ import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/data/repositories/member/member_repository.dart';
 import 'package:echurch_desktop/data/services/api/mappers/dio_exception_mapper.dart';
 import 'package:echurch_desktop/data/services/api/mappers/duplicate_api_model_mapper.dart';
+import 'package:echurch_desktop/data/services/api/mappers/spouse_review_api_model_mapper.dart';
 import 'package:echurch_desktop/data/services/api/mappers/member_api_model_mapper.dart';
 import 'package:echurch_desktop/data/services/api/mappers/member_form_api_model_mapper.dart';
 import 'package:echurch_desktop/data/services/api/member_api.dart';
 import 'package:echurch_desktop/data/services/api/model/member/member_form_api_model.dart';
+import 'package:echurch_desktop/data/services/api/model/member/spouse_review_api_model.dart';
 import 'package:echurch_desktop/data/services/api/model/member/member_api_model.dart';
 import 'package:echurch_desktop/domain/models/member/duplicate.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
 import 'package:echurch_desktop/domain/models/member/member_form.dart';
+import 'package:echurch_desktop/domain/models/member/spouse_review.dart';
 
 class MemberRepositoryRemote({required final MemberApi _api}) implements MemberRepository {
   @override
@@ -64,6 +67,21 @@ class MemberRepositoryRemote({required final MemberApi _api}) implements MemberR
 
   @override
   Future<Result<void>> dismissDuplicate(int personId, int otherPersonId) => _guard(() => _api.dismissDuplicate(DuplicateDismissInput(personId: personId, otherPersonId: otherPersonId)));
+
+  @override
+  Future<Result<SpouseReview>> spouseReview() => _guard(() async => (await _api.spouseReview()).toDomain());
+
+  @override
+  Future<Result<void>> linkSpouses(List<SpouseLink> links) => _guard(
+    () => _api.linkSpouses(
+      SpouseLinkBatchInput(
+        links: [for (final link in links) SpouseLinkInput(personId: link.personId, spouseId: link.spouseId, addressFrom: link.addressFrom)],
+      ),
+    ),
+  );
+
+  @override
+  Future<Result<void>> dismissSpouse(int personId, {int? candidateId}) => _guard(() => _api.dismissSpouse(SpouseDismissInput(personId: personId, candidateId: candidateId)));
 
   Future<Result<T>> _guard<T>(Future<T> Function() call) async {
     try {

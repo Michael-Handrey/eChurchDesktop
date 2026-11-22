@@ -7,9 +7,11 @@ import 'package:echurch_desktop/data/services/api/mappers/member_form_api_model_
 import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
 import 'package:echurch_desktop/domain/models/member/duplicate.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
+import 'package:echurch_desktop/domain/models/member/spouse_review.dart';
 import 'package:echurch_desktop/domain/models/member/member_form.dart';
 import 'package:echurch_desktop/ui/members/form/member_form_screen.dart';
 import 'package:echurch_desktop/ui/members/form/member_form_viewmodel.dart';
+import 'package:echurch_desktop/ui/members/form/widgets/form_fields.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -73,7 +75,17 @@ class _FakeMemberRepository implements MemberRepository {
   }
 
   @override
-  Future<Result<MemberPage>> search({int? churchId, MemberStatus? status, String? text, int? ecclesiasticalRoleId, int page = 0, int size = 20}) => throw UnimplementedError();
+  Future<Result<MemberPage>> search({int? churchId, MemberStatus? status, String? text, int? ecclesiasticalRoleId, int page = 0, int size = 20}) async {
+    const all = [
+      MemberRow(id: 10, name: 'Carla Andressa Souza Leite', status: MemberStatus.active, churchName: 'Sede - Rolândia'),
+      MemberRow(id: 30, name: 'Michael Handrey dos Santos Augusto', status: MemberStatus.active, churchName: 'Sede - Rolândia'),
+    ];
+    final items = [
+      for (final member in all)
+        if (member.name.toLowerCase().contains((text ?? '').toLowerCase())) member,
+    ];
+    return Result.ok(MemberPage(items: items, total: items.length, page: 0, size: size));
+  }
 
   @override
   Future<Result<List<EcclesiasticalRoleOption>>> roles() => throw UnimplementedError();
@@ -95,6 +107,15 @@ class _FakeMemberRepository implements MemberRepository {
 
   @override
   Future<Result<void>> dismissDuplicate(int personId, int otherPersonId) => throw UnimplementedError();
+
+  @override
+  Future<Result<SpouseReview>> spouseReview() => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> linkSpouses(List<SpouseLink> links) => throw UnimplementedError();
+
+  @override
+  Future<Result<void>> dismissSpouse(int personId, {int? candidateId}) => throw UnimplementedError();
 }
 
 class _FakeLookupRepository implements LookupRepository {
@@ -263,6 +284,19 @@ void main() {
       expect(single.name, 'Ana');
     });
 
+    test('cônjuge: vínculo (com id) só para casados ou viúvos; sem vínculo vai só o nome', () {
+      final linked = _carla.copyWith(spouseId: 30).toInput();
+      expect(linked.spouseId, 30);
+      expect(linked.spouseName, 'Michael Handrey dos Santos Augusto');
+
+      final widowed = MemberDraft(maritalStatus: MaritalStatus.widowed, spouseId: 30, spouseName: 'Michael').toInput();
+      expect(widowed.spouseId, 30, reason: 'viúvo mantém o vínculo');
+
+      final divorced = MemberDraft(maritalStatus: MaritalStatus.divorced, spouseId: 30, spouseName: 'Michael').toInput();
+      expect(divorced.spouseId, isNull);
+      expect(divorced.spouseName, isNull);
+    });
+
     test('StreetType separa o tipo do nome que vem do CEP', () {
       expect(StreetType.split('Rua das Flores'), (StreetType.street, 'das Flores'));
       expect(StreetType.split('Av. Brasil'), (StreetType.avenue, 'Brasil'));
@@ -315,6 +349,39 @@ void main() {
 
       expect(find.byIcon(Icons.error), findsNWidgets(4), reason: 'pessoais, documentos, família e endereço (a igreja já vem preenchida)');
       expect(find.text('Revise os campos destacados.'), findsOneWidget);
+    });
+
+    testWidgets('cônjuge: busca os membros (sem o próprio) e permite usar só o nome', (tester) async {
+      final (viewModel, _) = await pumpForm(tester, memberId: 10);
+      expect(viewModel.draft.spouse, const SpouseOption(name: 'Michael Handrey dos Santos Augusto'), reason: 'cadastro antigo: só o nome');
+      expect(find.text('Só o nome (não está vinculado a um cadastro).'), findsOneWidget);
+
+      final field = find.descendant(of: find.byType(LookupField<SpouseOption>), matching: find.byType(TextField));
+      await tester.enterText(field, 'a');
+      await tester.enterText(field, 'aug');
+      await tester.runAsync(pumpEventQueue);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: find.byType(ListTile), matching: find.text('Sede - Rolândia')),
+        findsOneWidget,
+        reason: 'a igreja aparece na opção',
+      );
+      expect(
+        find.descendant(of: find.byType(ListTile), matching: find.text('Carla Andressa Souza Leite')),
+        findsNothing,
+        reason: 'o próprio membro não aparece na lista',
+      );
+      expect(find.text('Usar só o nome “aug”'), findsOneWidget);
+
+      await tester.tap(find.text('Michael Handrey dos Santos Augusto').last);
+      await tester.pumpAndSettle();
+      expect(viewModel.draft.spouseId, 30);
+      expect(find.textContaining('Vinculado ao cadastro de Michael'), findsOneWidget);
+
+      await tester.tap(find.text('Desvincular'));
+      await tester.pumpAndSettle();
+      expect(viewModel.draft.spouseId, isNull);
+      expect(viewModel.draft.spouseName, 'Michael Handrey dos Santos Augusto', reason: 'o nome fica');
     });
 
     testWidgets('cancelar com alterações pede confirmação', (tester) async {

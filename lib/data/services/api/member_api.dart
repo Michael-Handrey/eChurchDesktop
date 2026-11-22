@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:echurch_desktop/data/services/api/model/member/member_api_model.dart';
 import 'package:echurch_desktop/data/services/api/model/member/member_form_api_model.dart';
+import 'package:echurch_desktop/data/services/api/model/member/spouse_review_api_model.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'member_api.g.dart';
@@ -46,6 +47,18 @@ abstract class MemberApi {
   /// "Não são a mesma pessoa" (sugestões por nome e nascimento).
   @POST('/v1/people/duplicates/dismiss')
   Future<void> dismissDuplicate(@Body() DuplicateDismissInput request);
+
+  /// Revisão de cônjuges (Secretaria/Administrador): sugestões de casais e quem não tem sugestão.
+  @GET('/v1/people/spouse-review')
+  Future<SpouseReviewApiModel> spouseReview();
+
+  /// Liga casais (um ou vários), nos dois lados.
+  @POST('/v1/people/spouse-review/link')
+  Future<void> linkSpouses(@Body() SpouseLinkBatchInput request);
+
+  /// "Não é este" / "não é membro".
+  @POST('/v1/people/spouse-review/dismiss')
+  Future<void> dismissSpouse(@Body() SpouseDismissInput request);
 
   @PUT('/v1/people/{id}/deactivate')
   Future<MemberDetailsApiModel> deactivate(@Path('id') int id, @Body() MemberDeactivationInput request);

@@ -17,7 +17,7 @@ import 'package:flutter/foundation.dart';
 enum MemberFormSection {
   personal('Dados pessoais', {'name', 'birthDate', 'gender', 'nationality', 'birthCityId', 'professionId'}),
   documents('Documentos', {'cpf', 'rg'}),
-  family('Família', {'maritalStatus', 'spouseName', 'fatherName', 'motherName'}),
+  family('Família', {'maritalStatus', 'spouseName', 'spouseId', 'fatherName', 'motherName'}),
   address('Endereço', {'address', 'address.postalCode', 'address.streetType', 'address.streetName', 'address.streetNumber', 'address.complement', 'address.district', 'address.city'}),
   contact('Contato', {'contact', 'contact.phone', 'contact.secondaryPhone', 'contact.email'}),
   church('Igreja', {'churchId', 'ecclesiasticalRoleId', 'ministryIds', 'baptismDate', 'acceptedJesusDate'}),
@@ -129,6 +129,30 @@ class MemberFormViewModel({
     Ok<List<NamedOption>>(:final value) => value,
     Error<List<NamedOption>>() => const [],
   };
+
+  /// Membros para o campo Cônjuge (todas as igrejas do alcance; sem o próprio membro).
+  Future<List<SpouseOption>> searchSpouses(String text) async {
+    if (text.trim().length < 2) return const [];
+    return switch (await _members.search(text: text, size: 8)) {
+      Ok(:final value) => [
+        for (final member in value.items)
+          if (member.id != _draft.id) SpouseOption(id: member.id, name: member.name, church: member.churchName),
+      ],
+      Error() => const [],
+    };
+  }
+
+  /// Escolheu o cônjuge: cadastrado (vínculo) ou só o nome (não é membro).
+  void setSpouse(SpouseOption spouse) => update(
+    (draft) => spouse.isLinked ? draft.copyWith(spouseId: spouse.id, spouseName: spouse.name) : draft.copyWith(clearSpouseId: true, spouseName: spouse.name),
+    field: 'spouseName',
+  );
+
+  /// Tira o vínculo: o nome fica escrito (como cônjuge que não está cadastrado).
+  void unlinkSpouse() => update((draft) => draft.copyWith(clearSpouseId: true), field: 'spouseId');
+
+  /// Sem cônjuge (campo vazio).
+  void clearSpouse() => update((draft) => draft.copyWith(clearSpouseId: true, spouseName: ''), field: 'spouseName');
 
   void toggleMinistry(int id, bool selected) {
     final ids = {..._draft.ministryIds};

@@ -67,6 +67,15 @@ enum StreetType {
   }
 }
 
+/// Cônjuge no formulário: cadastrado ([id], vínculo nos dois lados) ou só o nome escrito ([id] nulo:
+/// cônjuge que não está cadastrado). [church]: só para mostrar na lista de busca.
+class const SpouseOption({final int? id, required final String name, final String? church}) extends Equatable {
+  bool get isLinked => id != null;
+
+  @override
+  List<Object?> get props => [id, name, church];
+}
+
 /// Opção id + nome (cargo, ministério, bairro, profissão).
 class const NamedOption({required final int id, required final String name}) extends Equatable {
   @override
@@ -131,6 +140,9 @@ class const MemberDraft({
   final String rg = '',
   final MaritalStatus? maritalStatus,
   final String spouseName = '',
+
+  /// Cônjuge cadastrado (vínculo); nulo = sem vínculo ([spouseName] é o nome escrito).
+  final int? spouseId,
   final String fatherName = '',
   final String motherName = '',
   final int? addressId,
@@ -160,6 +172,16 @@ class const MemberDraft({
 }) extends Equatable {
   bool get isNew => id == null;
 
+  /// Casado ou viúvo: pode ter cônjuge (vínculo ou nome).
+  bool get canHaveSpouse => maritalStatus == MaritalStatus.married || maritalStatus == MaritalStatus.widowed;
+
+  /// O cônjuge como aparece no campo: cadastrado, só o nome, ou nenhum.
+  SpouseOption? get spouse => spouseId != null
+      ? SpouseOption(id: spouseId, name: spouseName)
+      : spouseName.trim().isEmpty
+      ? null
+      : SpouseOption(name: spouseName.trim());
+
   MemberDraft copyWith({
     String? name,
     DateTime? birthDate,
@@ -173,6 +195,8 @@ class const MemberDraft({
     String? rg,
     MaritalStatus? maritalStatus,
     String? spouseName,
+    int? spouseId,
+    bool clearSpouseId = false,
     String? fatherName,
     String? motherName,
     String? postalCode,
@@ -207,6 +231,7 @@ class const MemberDraft({
     rg: rg ?? this.rg,
     maritalStatus: maritalStatus ?? this.maritalStatus,
     spouseName: spouseName ?? this.spouseName,
+    spouseId: clearSpouseId ? null : spouseId ?? this.spouseId,
     fatherName: fatherName ?? this.fatherName,
     motherName: motherName ?? this.motherName,
     addressId: addressId,
@@ -257,6 +282,7 @@ class const MemberDraft({
     rg,
     maritalStatus,
     spouseName,
+    spouseId,
     fatherName,
     motherName,
     addressId,

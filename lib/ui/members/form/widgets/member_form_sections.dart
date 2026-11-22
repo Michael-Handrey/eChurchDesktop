@@ -237,17 +237,7 @@ class const _Family(final MemberFormViewModel viewModel, final MemberFormControl
               items: [for (final status in MaritalStatus.values) (status, status.label)],
               onChanged: (value) => viewModel.update((d) => d.copyWith(maritalStatus: value), field: 'maritalStatus'),
             ),
-            _text(
-              viewModel,
-              controllers.spouseName,
-              field: 'spouseName',
-              label: 'Cônjuge',
-              required: married,
-              enabled: married,
-              helper: married ? null : 'Só para casados',
-              capitalization: TextCapitalization.words,
-              apply: (d, v) => d.copyWith(spouseName: v),
-            ),
+            _Spouse(viewModel: viewModel, required: married),
           ],
         ),
         FormRow(
@@ -272,6 +262,52 @@ class const _Family(final MemberFormViewModel viewModel, final MemberFormControl
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+/// Cônjuge: busca entre os membros (vínculo nos dois lados) ou só o nome, quando não é membro.
+class const _Spouse({required final MemberFormViewModel viewModel, required final bool required}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final draft = viewModel.draft;
+    final spouse = draft.spouse;
+    final enabled = draft.canHaveSpouse;
+    return Column(
+      crossAxisAlignment: .start,
+      spacing: 4,
+      children: [
+        LookupField<SpouseOption>(
+          key: ValueKey(('member-form-spouse', draft.maritalStatus)),
+          label: 'Cônjuge',
+          required: required,
+          enabled: enabled,
+          selected: spouse,
+          labelOf: (option) => option.name,
+          subtitleOf: (option) => option.church,
+          search: viewModel.searchSpouses,
+          createLabel: 'Usar só o nome',
+          createSubtitle: 'O cônjuge não é membro',
+          onCreate: (text) async => viewModel.setSpouse(SpouseOption(name: text.trim())),
+          onSelected: viewModel.setSpouse,
+          error: viewModel.errorOf('spouseId') ?? viewModel.errorOf('spouseName'),
+          helper: enabled ? null : 'Só para casados ou viúvos',
+        ),
+        if (enabled && spouse != null)
+          Row(
+            spacing: 6,
+            children: [
+              Icon(spouse.isLinked ? Icons.link : Icons.short_text, size: 16, color: spouse.isLinked ? AppColors.primary : AppColors.textMuted),
+              Expanded(
+                child: Text(
+                  spouse.isLinked ? 'Vinculado ao cadastro de ${spouse.name}. Ao salvar, vale para os dois.' : 'Só o nome (não está vinculado a um cadastro).',
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+              ),
+              if (spouse.isLinked) TextButton(onPressed: viewModel.unlinkSpouse, child: const Text('Desvincular')) else TextButton(onPressed: viewModel.clearSpouse, child: const Text('Limpar')),
+            ],
+          ),
       ],
     );
   }

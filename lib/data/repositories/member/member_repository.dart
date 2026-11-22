@@ -2,6 +2,7 @@ import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/domain/models/member/duplicate.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
 import 'package:echurch_desktop/domain/models/member/member_form.dart';
+import 'package:echurch_desktop/domain/models/member/spouse_review.dart';
 
 /// Membros da igreja. Erros de regra da API (motivo ou descrição em branco, membro já inativo...)
 /// chegam como `ValidationException` com a mensagem dela.
@@ -35,6 +36,15 @@ abstract interface class MemberRepository {
 
   /// Junta: [keepId] fica (com os campos de [takeFromRemoved] vindos do outro); [removeId] é desativado.
   Future<Result<void>> mergeDuplicates({required int keepId, required int removeId, required Set<MergeField> takeFromRemoved});
+
+  /// Revisão de cônjuges: sugestões de casais e quem tem cônjuge escrito sem sugestão.
+  Future<Result<SpouseReview>> spouseReview();
+
+  /// Liga os casais (nos dois lados); devolve quantos.
+  Future<Result<void>> linkSpouses(List<SpouseLink> links);
+
+  /// "Não é este" ([candidateId]) ou "não é membro" ([candidateId] nulo): a sugestão não volta.
+  Future<Result<void>> dismissSpouse(int personId, {int? candidateId});
 
   /// "Não são a mesma pessoa" (sugestão por nome e nascimento): não volta mais.
   Future<Result<void>> dismissDuplicate(int personId, int otherPersonId);

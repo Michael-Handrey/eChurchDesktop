@@ -160,6 +160,8 @@ class LookupField<T extends Object> extends StatefulWidget {
     this.helper,
     this.onCreate,
     this.createLabel = 'Cadastrar',
+    this.createSubtitle,
+    this.subtitleOf,
     this.enabled = true,
   });
 
@@ -173,6 +175,12 @@ class LookupField<T extends Object> extends StatefulWidget {
   final String? helper;
   final Future<void> Function(String text)? onCreate;
   final String createLabel;
+
+  /// Segunda linha da opção de "criar" (ex.: "não é membro").
+  final String? createSubtitle;
+
+  /// Segunda linha de cada opção da lista (ex.: a igreja).
+  final String? Function(T item)? subtitleOf;
   final bool enabled;
 
   @override
@@ -261,6 +269,10 @@ class _LookupFieldState<T extends Object> extends State<LookupField<T>> {
                       choice.item == null ? '${widget.createLabel} “${choice.create}”' : widget.labelOf(choice.item as T),
                       style: choice.item == null ? const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600) : null,
                     ),
+                    subtitle: switch (choice.item == null ? widget.createSubtitle : widget.subtitleOf?.call(choice.item as T)) {
+                      final text? => Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      null => null,
+                    },
                     onTap: () => onSelected(choice),
                   ),
               ],

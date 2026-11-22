@@ -8,6 +8,7 @@ import 'package:echurch_desktop/ui/members/duplicates/duplicates_screen.dart';
 import 'package:echurch_desktop/ui/members/form/member_form_bindings.dart';
 import 'package:echurch_desktop/ui/members/form/member_form_screen.dart';
 import 'package:echurch_desktop/ui/members/members_viewmodel.dart';
+import 'package:echurch_desktop/ui/members/spouse_review/spouse_review_screen.dart';
 import 'package:echurch_desktop/ui/members/widgets/deactivate_member_dialog.dart';
 import 'package:echurch_desktop/ui/members/widgets/member_details_dialog.dart';
 import 'package:echurch_desktop/ui/members/widgets/members_table.dart';
@@ -58,6 +59,15 @@ class const MembersScreen({super.key, required final MembersViewModel viewModel}
     return ListenableBuilder(
       listenable: viewModel,
       builder: (context, _) {
+        // Revisão de cônjuges: a página no lugar da lista.
+        if (viewModel.showingSpouseReview) {
+          return SpouseReviewBindings(
+            screenBuilder: (reviewContext) => SpouseReviewScreen(
+              viewModel: reviewContext.read(),
+              onClose: (changed) => viewModel.closeSpouseReview(changed: changed),
+            ),
+          );
+        }
         // Cadastros duplicados: a página no lugar da lista.
         if (viewModel.showingDuplicates) {
           return DuplicatesBindings(
@@ -139,6 +149,14 @@ class const _Header({required final MembersViewModel viewModel}) extends Statele
             style: OutlinedButton.styleFrom(foregroundColor: AppColors.warning),
             icon: const Icon(Icons.content_copy_outlined, size: 18),
             label: Text('Cadastros duplicados (${viewModel.duplicateCount})'),
+          ),
+          const SizedBox(width: 8),
+        ],
+        if (viewModel.canManage && viewModel.spouseReviewCount > 0) ...[
+          OutlinedButton.icon(
+            onPressed: viewModel.openSpouseReview,
+            icon: const Icon(Icons.favorite_border, size: 18),
+            label: Text('Revisar cônjuges (${viewModel.spouseReviewCount})'),
           ),
           const SizedBox(width: 8),
         ],
