@@ -1,7 +1,8 @@
 import 'package:echurch_desktop/domain/models/dashboard/recent_activity.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
-import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
+import 'package:echurch_desktop/core/result.dart';
+import 'package:echurch_desktop/ui/dashboard/home_viewmodel.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +11,7 @@ class RecentActivitySectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<DashboardViewModel>();
+    final viewModel = context.watch<HomeViewModel>();
 
     return Container(
       padding: const EdgeInsets.all(22),
@@ -26,6 +27,7 @@ class RecentActivitySectionWidget extends StatelessWidget {
           const SizedBox(height: 18),
           // Coluna (e não ListView): poucos itens, e o painel precisa informar a altura natural
           // para o IntrinsicHeight que iguala os dois painéis.
+          if (viewModel.load.running && !viewModel.loaded) const _Message('Carregando…') else if (viewModel.load.result case Error()) const _Message('Não foi possível carregar os últimos registros.') else if (viewModel.activities.isEmpty) const _Message('Nenhum registro ainda.'),
           for (final (index, activity) in viewModel.activities.indexed) ...[
             if (index > 0) const Divider(color: AppColors.borderSubtle, height: 14, thickness: 1),
             RecentActivityItemWidget(activity: activity),
@@ -166,7 +168,7 @@ class RecentActivityItemWidget extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            activity.timeAgo,
+            RecentActivity.timeAgo(activity.at, DateTime.now()),
             style: const TextStyle(
               color: AppColors.textMuted,
               fontSize: 12,
@@ -176,4 +178,16 @@ class RecentActivityItemWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+class _Message extends StatelessWidget {
+  const _Message(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+  );
 }

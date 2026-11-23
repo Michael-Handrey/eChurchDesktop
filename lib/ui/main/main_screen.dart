@@ -1,6 +1,8 @@
 import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
+import 'package:echurch_desktop/core/view_model_initializable.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
+import 'package:echurch_desktop/ui/dashboard/home_viewmodel.dart';
 import 'package:echurch_desktop/ui/main/widgets/sidebar.dart';
 import 'package:echurch_desktop/ui/members/members_bindings.dart';
 import 'package:echurch_desktop/ui/members/members_screen.dart';
@@ -55,6 +57,10 @@ class MainScreen extends StatelessWidget {
     if (selected == DashboardViewModel.prayerRequestsNavItem) {
       return PrayerRequestsBindings(screenBuilder: (context) => PrayerRequestsScreen(viewModel: context.read()));
     }
-    return const DashboardScreen();
+    // Tela inicial: os dados são buscados de novo cada vez que ela abre (e quando a igreja muda).
+    return ChangeNotifierProvider(
+      create: (context) => HomeViewModel(repository: context.read(), churchContext: context.read()).initialized(),
+      child: const DashboardScreen(),
+    );
   }
 }

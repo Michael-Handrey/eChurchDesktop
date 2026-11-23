@@ -1,7 +1,8 @@
 import 'package:echurch_desktop/domain/models/dashboard/birthday.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
-import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
+import 'package:echurch_desktop/core/result.dart';
+import 'package:echurch_desktop/ui/dashboard/home_viewmodel.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +16,7 @@ class BirthdaysSectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<DashboardViewModel>();
+    final viewModel = context.watch<HomeViewModel>();
     final today = viewModel.birthdaysToday;
     final next = viewModel.birthdaysNext;
 
@@ -56,11 +57,15 @@ class BirthdaysSectionWidget extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           // Ninguém hoje nem nos próximos dias: um aviso só, centralizado (o painel tem a altura dos registros).
-          if (today.isEmpty && next.isEmpty)
+          if (viewModel.load.running && !viewModel.loaded)
+            const _Empty('Carregando…')
+          else if (viewModel.load.result case Error())
+            const _Empty('Não foi possível carregar os aniversariantes.')
+          else if (today.isEmpty && next.isEmpty)
             const Expanded(child: _NoBirthdays())
           else ...[
             const _SectionLabel('Hoje'),
-            if (today.isEmpty) const _Empty('Ninguém faz aniversário hoje.') else for (final birthday in today) _BirthdayItem(birthday: birthday, trailing: '${birthday.age} anos', highlight: true),
+            if (today.isEmpty) const _Empty('Ninguém faz aniversário hoje.') else for (final birthday in today) _BirthdayItem(birthday: birthday, trailing: birthday.age == null ? 'hoje' : '${birthday.age} anos', highlight: true),
             const SizedBox(height: 14),
             const _SectionLabel('Próximos 7 dias'),
             if (next.isEmpty) const _Empty('Nenhum aniversário nos próximos dias.') else for (final birthday in next) _BirthdayItem(birthday: birthday, trailing: dayLabel(birthday.date)),

@@ -1,6 +1,7 @@
 import 'package:echurch_desktop/domain/models/dashboard/quick_stat.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
+import 'package:echurch_desktop/ui/dashboard/home_viewmodel.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -11,7 +12,8 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<DashboardViewModel>();
+    final viewModel = context.read<DashboardViewModel>();
+    final home = context.watch<HomeViewModel>();
 
     // Crianças ainda sem tela: sem ação (e sem cursor de clique).
     return Row(
@@ -24,7 +26,7 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
             iconBgColor: AppColors.membersBg,
             title: 'Membros',
             description: 'Cadastre e consulte os membros.',
-            stat: viewModel.statOf(QuickStatType.members),
+            stat: home.statOf(QuickStatType.members) ?? const QuickStat(label: 'membros ativos', type: QuickStatType.members),
             onTap: () => viewModel.openFromHome(DashboardViewModel.membersNavItem),
           ),
         ),
@@ -35,7 +37,7 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
             iconBgColor: AppColors.childrenBg,
             title: 'Crianças',
             description: 'Crianças e seus responsáveis.',
-            stat: viewModel.statOf(QuickStatType.children),
+            stat: home.statOf(QuickStatType.children) ?? const QuickStat(label: 'até 10 anos', type: QuickStatType.children),
           ),
         ),
         Expanded(
@@ -45,7 +47,7 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
             iconBgColor: AppColors.prayerBg,
             title: 'Pedido de Oração',
             description: 'Registre e acompanhe os pedidos.',
-            stat: viewModel.statOf(QuickStatType.prayers),
+            stat: home.statOf(QuickStatType.prayers) ?? const QuickStat(label: 'novos', type: QuickStatType.prayers),
             onTap: () => viewModel.openFromHome(DashboardViewModel.prayerRequestsNavItem),
           ),
         ),
@@ -148,7 +150,7 @@ class _QuickActionCardWidgetState extends State<QuickActionCardWidget> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: '${widget.stat.count} ',
+                      text: '${widget.stat.count ?? '—'} ',
                       style: TextStyle(color: widget.iconColor, fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                     TextSpan(text: widget.stat.label),
@@ -210,7 +212,7 @@ class _QuickActionCardWidgetState extends State<QuickActionCardWidget> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '${widget.stat.count}',
+              '${widget.stat.count ?? '—'}',
               style: TextStyle(color: widget.iconColor, fontSize: 28, fontWeight: FontWeight.w800, height: 1.1),
             ),
             Text(
