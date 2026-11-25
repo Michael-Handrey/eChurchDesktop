@@ -7,6 +7,7 @@ import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
 import 'package:echurch_desktop/domain/models/member/member.dart';
 import 'package:echurch_desktop/domain/models/ministry/ministry.dart';
 import 'package:echurch_desktop/ui/ministries/ministries_screen.dart';
+import 'package:echurch_desktop/ui/members/form/widgets/form_fields.dart';
 import 'package:echurch_desktop/ui/ministries/ministries_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -14,10 +15,16 @@ import 'package:material_ui/material_ui.dart';
 import '../support/user_admin_fakes.dart';
 
 class _FakeMinistries implements MinistryRepository {
-  var stored = <Ministry>[
-    const Ministry(id: 2, type: 'Ministério de Jovens', name: 'Filhos da Promessa', churchId: 1, leaderId: 10, leaderName: 'Ana Souza', memberCount: 2),
-    const Ministry(id: 6, type: 'Ministério de Louvor', name: 'Shekinah', churchId: 1, memberCount: 0, active: false),
-  ];
+  /// [canEdit]: o que a API diria para quem está logado (Secretaria, ou o líder do ministério).
+  _FakeMinistries({bool canEdit = true})
+    : stored = [
+        Ministry(id: 2, type: 'Ministério de Jovens', name: 'Filhos da Promessa', churchId: 1, leaderId: 10, leaderName: 'Ana Souza', memberCount: 2, canEditMembers: canEdit),
+        const Ministry(id: 6, type: 'Ministério de Louvor', name: 'Shekinah', churchId: 1, memberCount: 0, active: false),
+      ];
+
+  List<Ministry> stored;
+  final candidateSearches = <(int, String)>[];
+  final added = <int>[];
   final searches = <({int? churchId, bool includeInactive})>[];
   final saved = <(int?, MinistryDraft)>[];
   var memberRows = <MemberRow>[
@@ -50,7 +57,16 @@ class _FakeMinistries implements MinistryRepository {
   Future<Result<List<MemberRow>>> members(int id) async => Result.ok(memberRows);
 
   @override
-  Future<Result<List<MemberRow>>> addMembers(int id, List<int> personIds) async => Result.ok(memberRows);
+  Future<Result<List<MinistryCandidate>>> candidates(int id, String text) async {
+    candidateSearches.add((id, text));
+    return const Result.ok([MinistryCandidate(id: 12, name: 'Carla Dias', role: 'DIACONISA', church: 'Sede - Rolândia')]);
+  }
+
+  @override
+  Future<Result<List<MemberRow>>> addMembers(int id, List<int> personIds) async {
+    added.addAll(personIds);
+    return Result.ok(memberRows);
+  }
 
   @override
   Future<Result<List<MemberRow>>> removeMembers(int id, List<int> personIds) async {
@@ -80,12 +96,13 @@ class _FakeMembers implements MemberRepository {
 
 const _consulta = AuthSessionUser(login: 'joao', name: 'João', firstAccess: false, churchId: 1, roles: ['ROLE_USER']);
 const _secretaria = AuthSessionUser(login: 'maria', name: 'Maria', firstAccess: false, churchId: 1, roles: ['ROLE_SECRETARIA']);
+const _lider = AuthSessionUser(login: 'ana', name: 'Ana', firstAccess: false, churchId: 1, roles: [AuthSessionUser.ministryLeaderRole]);
 
 void main() {
   late _FakeMinistries repository;
 
   Future<MinistriesViewModel> viewModelFor(AuthSessionUser user, {WidgetTester? tester}) async {
-    repository = _FakeMinistries();
+    repository = _FakeMinistries(canEdit: user.canManage || user.isMinistryLeader);
     final session = sessionSignedInAs(user);
     final churchContext = ChurchContextNotifier(churchRepository: FakeChurchRepository(), sessionNotifier: session);
     final viewModel = MinistriesViewModel(repository: repository, members: _FakeMembers(), churchContext: churchContext, session: session);
@@ -181,5 +198,53 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.removed, [11]);
     expect(find.text('1 membro'), findsOneWidget);
+  });
+
+  testWidgets('líder: vê os que lidera, inclui (nome, cargo e igreja) e tira membros, sem editar o ministério', (tester) async {
+    await pumpScreen(tester, _lider);
+    expect(find.textContaining('Os ministérios que você lidera'), findsOneWidget);
+    expect(find.text('Novo ministério'), findsNothing);
+    expect(find.text('Editar'), findsNothing);
+    expect(find.text('Desativar'), findsNothing);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Membros').first);
+    await tester.runAsync(pumpEventQueue);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Tirar do ministério'), findsOneWidget);
+
+    final field = find.descendant(of: find.byType(LookupField<MinistryCandidate>), matching: find.byType(TextField));
+    await tester.enterText(field, 'c');
+    await tester.enterText(field, 'car');
+    await tester.runAsync(pumpEventQueue);
+    await tester.pumpAndSettle();
+    expect(repository.candidateSearches.last, (2, 'car'));
+    expect(find.text('Carla Dias'), findsOneWidget);
+    expect(find.text('DIACONISA · Sede - Rolândia'), findsOneWidget);
+
+    await tester.tap(find.text('Carla Dias'));
+    await tester.runAsync(pumpEventQueue);
+    await tester.pumpAndSettle();
+    expect(repository.added, [12]);
+  });
+
+  testWidgets('quem só consulta abre os membros sem incluir nem tirar', (tester) async {
+    await pumpScreen(tester, _consulta);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Membros').first);
+    await tester.runAsync(pumpEventQueue);
+    await tester.pumpAndSettle();
+    expect(find.byType(LookupField<MinistryCandidate>), findsNothing);
+    expect(find.byTooltip('Tirar do ministério'), findsNothing);
+  });
+
+  test('sem ministério que lidera: aviso próprio', () async {
+    final viewModel = await viewModelFor(_lider);
+    expect(viewModel.onlyLeads, isTrue);
+    expect((await viewModelFor(_secretaria)).onlyLeads, isFalse);
+  });
+
+  test('nome, cargo e igreja do candidato', () {
+    expect(const MinistryCandidate(id: 1, name: 'A', role: 'DIÁCONO', church: 'Sede').details, 'DIÁCONO · Sede');
+    expect(const MinistryCandidate(id: 1, name: 'A', church: 'Sede').details, 'Sede');
+    expect(const MinistryCandidate(id: 1, name: 'A').details, isNull);
   });
 }

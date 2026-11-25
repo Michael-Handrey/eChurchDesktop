@@ -15,11 +15,13 @@ class const UserSummaryApiModel({
   final String? churchName,
   final List<String>? groups,
   final List<int>? groupIds,
+  final int? personId,
+  final String? personName,
 }) extends Equatable {
   factory UserSummaryApiModel.fromJson(Map<String, dynamic> json) => _$UserSummaryApiModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserSummaryApiModelToJson(this);
 
   @override
-  List<Object?> get props => [id, login, name, active, firstAccess, churchId, churchName, groups, groupIds];
+  List<Object?> get props => [id, login, name, active, firstAccess, churchId, churchName, groups, groupIds, personId, personName];
 }

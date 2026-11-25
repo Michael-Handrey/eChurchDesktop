@@ -21,7 +21,8 @@ enum MinistryTab { active, inactive, all }
 typedef MinistrySave = ({int? id, MinistryDraft draft});
 
 /// Ministérios da igreja escolhida no seletor: listar, cadastrar, editar, desativar/reativar e os
-/// membros de cada um. Secretaria/Administrador alteram; quem só consulta vê.
+/// membros de cada um. Secretaria/Administrador alteram; quem só consulta vê. O Líder de ministério só vê os que
+/// lidera e inclui ou tira membros deles ([Ministry.canEditMembers], decidido pela API).
 class MinistriesViewModel({
   required final MinistryRepository _repository,
   required final MemberRepository _members,
@@ -51,6 +52,9 @@ class MinistriesViewModel({
   }
 
   bool get canManage => _session.user?.canManage ?? false;
+
+  /// Líder de ministério sem Secretaria nem Usuário: a API traz só os ministérios que ele lidera.
+  bool get onlyLeads => !(_session.user?.canSeeMembers ?? false) && (_session.user?.isMinistryLeader ?? false);
   String? get churchName => _churchContext.selected?.name;
   int? get churchId => _churchContext.selected?.id;
   List<ChurchSummary> get churches => _churchContext.churches;
@@ -85,6 +89,18 @@ class MinistriesViewModel({
       Ok(:final value) => [for (final member in value.items) SpouseOption(id: member.id, name: member.name, church: member.churchName)],
       Error() => const [],
     };
+  }
+
+  /// Membros para incluir no ministério: nome, cargo e igreja (a API traz só os que ainda não estão nele).
+  Future<List<MinistryCandidate>> searchCandidates(int ministryId, String text) async {
+    if (text.trim().length < 2) return const [];
+    switch (await _repository.candidates(ministryId, text)) {
+      case Ok(:final value):
+        return value;
+      case Error(:final error):
+        _log.error('Falha ao buscar membros para o ministério', error: error, stackTrace: error.stackTrace);
+        return const [];
+    }
   }
 
   void _onChurchChanged() {

@@ -91,7 +91,6 @@ As telas de **Membros** e **Pedidos de Oração** já seguem a igreja escolhida.
 
 - **Tesouraria** (`ROLE_FINANCEIRO`): entra junto com o módulo **Financeiro**.
 - **Pastoral** (`ROLE_PASTORAL`): entra junto com o módulo **Pastoral**.
-- **Líder de ministério:** vê só os membros do próprio ministério. Definir junto com a **tela de Ministérios**.
 
 ---
 
@@ -100,9 +99,10 @@ As telas de **Membros** e **Pedidos de Oração** já seguem a igreja escolhida.
 Hoje (banco local): 10 ministérios, todos da Sede, cada um com o **tipo** ("Ministério de Jovens") e o **nome próprio** ("Filhos da Promessa"), líder e vice-líder; 169 participações de membros.
 
 - **Etapa 1 (feita, 2026-11-22):** tela Secretaria > Ministérios: lista da igreja escolhida (tipo, nome, líder, vice-líder, número de membros); cadastrar e editar (tipo, nome, igreja, líder e vice-líder buscados entre os membros; líder e vice entram como membros do ministério); **desativar em vez de excluir** (some do formulário do membro; reativar volta); ver os membros do ministério, incluir e tirar. Secretaria/Administrador alteram; quem só consulta vê.
-- **Etapa 2:** perfil **Líder de ministério** (vê só os membros do próprio ministério; FEAT-8).
+- **Etapa 2 (feita, 2026-11-23):** perfil **Líder de ministério** (FEAT-8). Em Configurações > Usuários e acesso, o administrador liga o usuário ao **cadastro de membro** dele e dá o grupo **Líder de ministério**. Se esse membro é líder ou vice-líder, o usuário vê em Ministérios **só esses ministérios** e **só inclui ou tira membros** (a busca mostra nome, cargo e igreja). Nome, líder, vice e desativar continuam com Secretaria/Administrador. Sozinho, o líder **não vê** Membros, Crianças, os números da tela inicial nem a busca rápida. Com o grupo Usuário também, vê tudo como antes (as permissões se somam).
 - **A decidir:** Ministério Infantil (0–10) e Avivah (11–17): os membros entram **automaticamente pela idade** ou são marcados à mão? (ver [docs/PESSOAS_E_FAMILIA.md](docs/PESSOAS_E_FAMILIA.md)).
-- **Depois:** funções ministeriais (27 cadastradas, só 5 em uso).
+- **Futuro (app mobile):** levar as funções do **Líder de ministério** (ver os ministérios que lidera, incluir e tirar membros) para o **app mobile**. A API já está pronta para isso: `GET /api/v1/ministries` (só os que ele lidera), `GET /{id}/members`, `GET /{id}/candidates?text=`, `POST /{id}/members` e `POST /{id}/members/remove`, com o grupo Líder de ministério e o usuário ligado ao cadastro de membro.
+- **Funções ministeriais no cadastro do membro (a fazer):** o membro tem as funções no banco (`natural_person_ministerial_role`, 27 funções cadastradas), mas elas **não aparecem** no formulário de cadastro e edição, nem na lista, nem nos detalhes. Hoje (banco local) só 2 membros têm funções (5 no total). Das 27, 13 são "Líder/Vice-líder de ..." e repetem o líder e o vice do cadastro de Ministérios. **A decidir** antes de fazer: o que fica como função (conselho, tesouraria, secretaria...) e o que vem do ministério.
 
 ## Relatórios & Documentos
 

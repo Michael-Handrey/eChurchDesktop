@@ -20,6 +20,8 @@ class UserMenuWidget extends StatelessWidget {
     final roles = user?.roles ?? const [];
     if (roles.contains(AuthSessionUser.adminRole)) return 'Administrador';
     if (roles.contains('ROLE_SECRETARIA')) return 'Secretaria';
+    if (roles.contains(AuthSessionUser.userRole)) return 'Usuário';
+    if (roles.contains(AuthSessionUser.ministryLeaderRole)) return 'Líder de ministério';
     return 'Usuário';
   }
 

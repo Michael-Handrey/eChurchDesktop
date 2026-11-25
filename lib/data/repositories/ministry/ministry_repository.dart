@@ -16,6 +16,9 @@ abstract interface class MinistryRepository {
   /// Membros do ministério, em ordem de nome.
   Future<Result<List<MemberRow>>> members(int id);
 
+  /// Membros ativos (nome com [text]) que ainda não estão no ministério, para incluir.
+  Future<Result<List<MinistryCandidate>>> candidates(int id, String text);
+
   Future<Result<List<MemberRow>>> addMembers(int id, List<int> personIds);
 
   /// O líder e o vice-líder não saem (troque antes).

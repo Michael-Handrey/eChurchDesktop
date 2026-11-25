@@ -13,6 +13,8 @@ extension UserSummaryApiModelMapper on UserSummaryApiModel {
     groupIds: groupIds ?? const [],
     churchId: churchId,
     churchName: (churchName ?? '').trim().isEmpty ? null : churchName!.trim(),
+    personId: personId,
+    personName: personName?.trim(),
   );
 }
 

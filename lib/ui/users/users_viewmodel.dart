@@ -5,9 +5,12 @@ import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/core/view_model_initializable.dart';
 import 'package:echurch_desktop/data/repositories/church/church_repository.dart';
 import 'package:echurch_desktop/data/repositories/group_admin/group_admin_repository.dart';
+import 'package:echurch_desktop/data/repositories/member/member_repository.dart';
 import 'package:echurch_desktop/data/repositories/user_admin/user_admin_repository.dart';
 import 'package:echurch_desktop/domain/models/auth/password_policy.dart';
 import 'package:echurch_desktop/domain/models/church/church_summary.dart';
+import 'package:echurch_desktop/domain/models/member/member.dart';
+import 'package:echurch_desktop/domain/models/member/member_form.dart';
 import 'package:echurch_desktop/domain/models/user/managed_user.dart';
 import 'package:echurch_desktop/domain/models/user/security_group.dart';
 import 'package:echurch_desktop/ui/users/access_labels.dart';
@@ -16,9 +19,9 @@ import 'package:flutter/foundation.dart';
 /// Pedido de redefinição: [password] nulo = o sistema gera a senha provisória.
 typedef PasswordResetRequestArgs = ({ManagedUser user, String? password});
 
-/// Novos grupos de um usuário.
-/// Novo acesso de um usuário: igreja e grupos (só o que mudou é enviado).
-typedef UserAccessChange = ({ManagedUser user, int? churchId, Set<int> groupIds});
+/// Novo acesso de um usuário: igreja, membro ligado ([personId] nulo = sem vínculo) e grupos
+/// (só o que mudou é enviado).
+typedef UserAccessChange = ({ManagedUser user, int? churchId, int? personId, Set<int> groupIds});
 
 /// Ativar ou desativar um usuário.
 typedef UserActiveChange = ({ManagedUser user, bool active});
@@ -57,6 +60,7 @@ class UsersViewModel({
   required final UserAdminRepository _userAdminRepository,
   required final GroupAdminRepository _groupAdminRepository,
   required final ChurchRepository _churchRepository,
+  required final MemberRepository _memberRepository,
   required final AuthSessionNotifier _sessionNotifier,
 }) extends ChangeNotifier implements ViewModelInitializable {
   final _log = AppLogger('UsersViewModel');
@@ -211,8 +215,17 @@ class UsersViewModel({
     return result;
   }
 
-  /// Envia só o que mudou: primeiro a igreja, depois os grupos. Se a segunda parte falhar,
-  /// a primeira já fica valendo (e aparece na lista).
+  /// Membros para ligar ao usuário (todas as igrejas: o administrador alcança todas).
+  Future<List<SpouseOption>> searchMembers(String text) async {
+    if (text.trim().length < 2) return const [];
+    return switch (await _memberRepository.search(text: text, status: MemberStatus.active, size: 8)) {
+      Ok(:final value) => [for (final member in value.items) SpouseOption(id: member.id, name: member.name, church: member.churchName)],
+      Error() => const [],
+    };
+  }
+
+  /// Envia só o que mudou: a igreja, o membro e os grupos, nessa ordem. Se uma parte falhar,
+  /// as anteriores já ficam valendo (e aparecem na lista).
   Future<Result<void>> _updateAccess(UserAccessChange change) async {
     final user = change.user;
 
@@ -223,6 +236,17 @@ class UsersViewModel({
           _replace(value);
         case Error<ManagedUser>(:final error):
           _log.error('Falha ao alterar a igreja de ${user.login}', error: error, stackTrace: error.stackTrace);
+          return Result.error(error);
+      }
+    }
+
+    if (change.personId != user.personId) {
+      switch (await _userAdminRepository.setPerson(userId: user.id, personId: change.personId)) {
+        case Ok<ManagedUser>(:final value):
+          _log.info('Membro de ${user.login} alterado: ${value.personId}');
+          _replace(value);
+        case Error<ManagedUser>(:final error):
+          _log.error('Falha ao ligar ${user.login} ao membro', error: error, stackTrace: error.stackTrace);
           return Result.error(error);
       }
     }

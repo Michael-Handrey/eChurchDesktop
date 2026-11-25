@@ -18,6 +18,16 @@ MinistryApiModel _$MinistryApiModelFromJson(Map<String, dynamic> json) => Minist
   viceLeaderName: json['viceLeaderName'] as String?,
   memberCount: (json['memberCount'] as num?)?.toInt(),
   active: json['active'] as bool?,
+  canEditMembers: json['canEditMembers'] as bool?,
+);
+
+MinistryCandidateApiModel _$MinistryCandidateApiModelFromJson(
+  Map<String, dynamic> json,
+) => MinistryCandidateApiModel(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String?,
+  ecclesiasticalRoleName: json['ecclesiasticalRoleName'] as String?,
+  churchName: json['churchName'] as String?,
 );
 
 Map<String, dynamic> _$MinistryInputToJson(MinistryInput instance) => <String, dynamic>{

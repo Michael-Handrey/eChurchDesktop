@@ -16,6 +16,8 @@ UserSummaryApiModel _$UserSummaryApiModelFromJson(Map<String, dynamic> json) => 
   churchName: json['churchName'] as String?,
   groups: (json['groups'] as List<dynamic>?)?.map((e) => e as String).toList(),
   groupIds: (json['groupIds'] as List<dynamic>?)?.map((e) => (e as num).toInt()).toList(),
+  personId: (json['personId'] as num?)?.toInt(),
+  personName: json['personName'] as String?,
 );
 
 Map<String, dynamic> _$UserSummaryApiModelToJson(
@@ -30,4 +32,6 @@ Map<String, dynamic> _$UserSummaryApiModelToJson(
   'churchName': instance.churchName,
   'groups': instance.groups,
   'groupIds': instance.groupIds,
+  'personId': instance.personId,
+  'personName': instance.personName,
 };

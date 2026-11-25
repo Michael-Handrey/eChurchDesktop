@@ -29,11 +29,19 @@ class const AuthSessionUser({
 }) extends Equatable {
   static const adminRole = 'ROLE_ADMIN';
   static const secretaryRole = 'ROLE_SECRETARIA';
+  static const userRole = 'ROLE_USER';
+  static const ministryLeaderRole = 'ROLE_LIDER_MINISTERIO';
 
   bool get isAdmin => roles.contains(adminRole);
 
   /// Administrador ou Secretaria: gerencia os cadastros (a API confere a mesma regra).
   bool get canManage => isAdmin || roles.contains(secretaryRole);
+
+  /// Vê Membros, Crianças, os números da tela inicial e a busca rápida: Administrador, Secretaria ou Usuário.
+  /// O Líder de ministério sozinho não vê (os membros dele aparecem em Ministérios).
+  bool get canSeeMembers => canManage || roles.contains(userRole);
+
+  bool get isMinistryLeader => roles.contains(ministryLeaderRole);
 
   @override
   List<Object?> get props => [login, name, firstAccess, churchId, roles];

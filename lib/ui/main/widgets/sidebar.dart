@@ -92,7 +92,9 @@ class SidebarNavListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<DashboardViewModel>();
-    final isAdmin = context.watch<AuthSessionNotifier>().user?.isAdmin ?? false;
+    final user = context.watch<AuthSessionNotifier>().user;
+    final isAdmin = user?.isAdmin ?? false;
+    final canSeeMembers = user?.canSeeMembers ?? false;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -115,18 +117,21 @@ class SidebarNavListWidget extends StatelessWidget {
             padding: const EdgeInsets.only(left: 12, top: 4, bottom: 4),
             child: Column(
               children: [
-                SidebarSubmenuItemWidget(
-                  icon: Icons.person_outline,
-                  label: 'Membros',
-                  isSelected: viewModel.selectedNavItem == DashboardViewModel.membersNavItem,
-                  onTap: () => viewModel.selectNavItem(DashboardViewModel.membersNavItem),
-                ),
-                SidebarSubmenuItemWidget(
-                  icon: Icons.face_outlined,
-                  label: 'Crianças',
-                  isSelected: viewModel.selectedNavItem == 'criancas',
-                  onTap: () => viewModel.selectNavItem('criancas'),
-                ),
+                // Membros e Crianças: o Líder de ministério sozinho não vê (a API também recusa).
+                if (canSeeMembers) ...[
+                  SidebarSubmenuItemWidget(
+                    icon: Icons.person_outline,
+                    label: 'Membros',
+                    isSelected: viewModel.selectedNavItem == DashboardViewModel.membersNavItem,
+                    onTap: () => viewModel.selectNavItem(DashboardViewModel.membersNavItem),
+                  ),
+                  SidebarSubmenuItemWidget(
+                    icon: Icons.face_outlined,
+                    label: 'Crianças',
+                    isSelected: viewModel.selectedNavItem == 'criancas',
+                    onTap: () => viewModel.selectNavItem('criancas'),
+                  ),
+                ],
                 SidebarSubmenuItemWidget(
                   icon: Icons.diversity_3_outlined,
                   label: 'Ministérios',

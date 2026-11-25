@@ -81,7 +81,11 @@ class const MinistriesScreen({super.key, required final MinistriesViewModel view
                           style: TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.3),
                         ),
                         Text(
-                          viewModel.canManage ? 'Cadastre os ministérios, os líderes e os membros de cada um$church.' : 'Ministérios da igreja$church.',
+                          viewModel.canManage
+                              ? 'Cadastre os ministérios, os líderes e os membros de cada um$church.'
+                              : viewModel.onlyLeads
+                              ? 'Os ministérios que você lidera$church: inclua ou tire membros.'
+                              : 'Ministérios da igreja$church.',
                           style: const TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
                         ),
                       ],
@@ -106,7 +110,14 @@ class const MinistriesScreen({super.key, required final MinistriesViewModel view
                 child: switch (load.result) {
                   Error(:final error) => _Message(icon: Icons.cloud_off_outlined, text: ErrorMessages.of(error), action: ('Tentar de novo', load.execute)),
                   _ when load.running && viewModel.ministries.isEmpty => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-                  _ when viewModel.ministries.isEmpty => _Message(icon: Icons.groups_2_outlined, text: viewModel.tab == MinistryTab.inactive ? 'Nenhum ministério inativo.' : 'Nenhum ministério nesta igreja.'),
+                  _ when viewModel.ministries.isEmpty => _Message(
+                    icon: Icons.groups_2_outlined,
+                    text: viewModel.tab == MinistryTab.inactive
+                        ? 'Nenhum ministério inativo.'
+                        : viewModel.onlyLeads
+                        ? 'Você não lidera nenhum ministério nesta igreja.'
+                        : 'Nenhum ministério nesta igreja.',
+                  ),
                   _ => _Table(
                     viewModel: viewModel,
                     onEdit: (ministry) => _edit(context, ministry),
@@ -370,9 +381,8 @@ class _MinistryMembersDialogState extends State<MinistryMembersDialog> {
     _viewModel.loadMembers.execute(widget.ministry.id);
   }
 
-  Future<void> _add(SpouseOption option) async {
-    if (option.id == null) return;
-    await _viewModel.addMember.execute((ministryId: widget.ministry.id, personId: option.id!));
+  Future<void> _add(MinistryCandidate option) async {
+    await _viewModel.addMember.execute((ministryId: widget.ministry.id, personId: option.id));
     _after(_viewModel.addMember.result);
     _viewModel.addMember.clearResult();
   }
@@ -417,13 +427,13 @@ class _MinistryMembersDialogState extends State<MinistryMembersDialog> {
                   [ministry.type, if (ministry.leaderName case final leader?) 'Líder: $leader'].join(' · '),
                   style: const TextStyle(color: AppColors.textSecondary),
                 ),
-                if (_viewModel.canManage && ministry.active)
-                  LookupField<SpouseOption>(
+                if (ministry.canEditMembers && ministry.active)
+                  LookupField<MinistryCandidate>(
                     label: 'Incluir membro',
                     selected: null,
                     labelOf: (option) => option.name,
-                    subtitleOf: (option) => option.church,
-                    search: _viewModel.searchMembers,
+                    subtitleOf: (option) => option.details,
+                    search: (text) => _viewModel.searchCandidates(ministry.id, text),
                     enabled: !busy,
                     onSelected: _add,
                   ),
@@ -465,7 +475,7 @@ class _MinistryMembersDialogState extends State<MinistryMembersDialog> {
                                   spacing: 8,
                                   children: [
                                     MemberStatusChip(status: member.status),
-                                    if (_viewModel.canManage && !isLeader.contains(member.id)) IconButton(tooltip: 'Tirar do ministério', onPressed: busy ? null : () => _remove(member), icon: const Icon(Icons.person_remove_outlined, size: 20)),
+                                    if (ministry.canEditMembers && !isLeader.contains(member.id)) IconButton(tooltip: 'Tirar do ministério', onPressed: busy ? null : () => _remove(member), icon: const Icon(Icons.person_remove_outlined, size: 20)),
                                   ],
                                 ),
                               );

@@ -20,11 +20,11 @@ class _UnusedMemberRepository implements MemberRepository {
 const _admin = AuthSessionUser(login: 'michael', name: 'Michael Handrey dos Santos Augusto', firstAccess: false, churchId: 1, roles: [AuthSessionUser.adminRole]);
 
 void main() {
-  Future<void> pumpHeader(WidgetTester tester, double width) async {
+  Future<void> pumpHeader(WidgetTester tester, double width, {AuthSessionUser user = _admin}) async {
     tester.view.physicalSize = Size(width, 400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final session = sessionSignedInAs(_admin);
+    final session = sessionSignedInAs(user);
     final churchContext = ChurchContextNotifier(churchRepository: FakeChurchRepository(), sessionNotifier: session);
     await tester.runAsync(pumpEventQueue);
     await tester.pumpWidget(
@@ -57,5 +57,16 @@ void main() {
     expect(find.text('MA'), findsOneWidget, reason: 'iniciais no avatar');
     expect(find.byKey(const ValueKey('busca-rapida')), findsOneWidget);
     expect(tester.getTopRight(find.byType(UserMenuWidget)).dx, closeTo(660 - 28, 1), reason: 'usuário encostado à direita');
+  });
+
+  testWidgets('líder de ministério sozinho: sem a busca rápida de membros, usuário à direita', (tester) async {
+    await pumpHeader(
+      tester,
+      1600,
+      user: const AuthSessionUser(login: 'ana', name: 'Ana Souza', firstAccess: false, churchId: 1, roles: [AuthSessionUser.ministryLeaderRole]),
+    );
+    expect(find.byKey(const ValueKey('busca-rapida')), findsNothing);
+    expect(find.text('Líder de ministério'), findsOneWidget, reason: 'perfil sob o nome');
+    expect(tester.getTopRight(find.byType(UserMenuWidget)).dx, closeTo(1600 - 28, 1));
   });
 }

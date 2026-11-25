@@ -3,6 +3,7 @@ import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/data/repositories/user_admin/user_admin_repository.dart';
 import 'package:echurch_desktop/data/services/api/mappers/dio_exception_mapper.dart';
 import 'package:echurch_desktop/data/services/api/mappers/user_admin_api_model_mapper.dart';
+import 'package:echurch_desktop/data/services/api/model/user/user_person_request.dart';
 import 'package:echurch_desktop/data/services/api/model/user/password_reset_api_model.dart';
 import 'package:echurch_desktop/data/services/api/model/user/user_active_request.dart';
 import 'package:echurch_desktop/data/services/api/model/user/user_church_request.dart';
@@ -62,6 +63,17 @@ class UserAdminRepositoryRemote({required final UserAdminApi _userAdminApi}) imp
       return Result.ok(user.toDomain());
     } on DioException catch (e, st) {
       // 400: grupo inexistente / admin tirando o próprio acesso (mensagem do backend).
+      return Result.error(e.toAppException(st));
+    }
+  }
+
+  @override
+  Future<Result<ManagedUser>> setPerson({required int userId, int? personId}) async {
+    try {
+      final user = await _userAdminApi.setPerson(userId, UserPersonRequest(personId: personId));
+      return Result.ok(user.toDomain());
+    } on DioException catch (e, st) {
+      // 400: membro inexistente ou já ligado a outro usuário (mensagem do backend).
       return Result.error(e.toAppException(st));
     }
   }

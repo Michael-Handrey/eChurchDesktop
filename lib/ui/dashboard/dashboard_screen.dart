@@ -9,7 +9,11 @@ import 'package:material_ui/material_ui.dart';
 /// Tela inicial: boas-vindas, cards (atalho + número de cada área), aniversariantes e últimos
 /// registros lado a lado, e a faixa "Juntos na missão".
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.showChurchData = true});
+
+  /// Cards, aniversariantes e últimos registros (lidos do `HomeViewModel`). Falso para o Líder de ministério
+  /// sozinho, que não vê os membros: só as boas-vindas e a faixa.
+  final bool showChurchData;
 
   @override
   Widget build(BuildContext context) {
@@ -19,15 +23,17 @@ class DashboardScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
-            WelcomeBannerWidget(),
-            SizedBox(height: 24),
-            QuickActionCardsSectionWidget(),
-            SizedBox(height: 24),
-            DashboardLowerPanelsWidget(),
-            SizedBox(height: 20),
-            MissionBannerWidget(),
-            SizedBox(height: 16),
+          children: [
+            const WelcomeBannerWidget(),
+            const SizedBox(height: 24),
+            if (showChurchData) ...const [
+              QuickActionCardsSectionWidget(),
+              SizedBox(height: 24),
+              DashboardLowerPanelsWidget(),
+              SizedBox(height: 20),
+            ],
+            const MissionBannerWidget(),
+            const SizedBox(height: 16),
           ],
         ),
       ),

@@ -30,6 +30,7 @@ void main() {
       userAdminRepository: repository,
       groupAdminRepository: groupRepository,
       churchRepository: FakeChurchRepository(),
+      memberRepository: FakeMemberSearchRepository(),
       sessionNotifier: sessionSignedInAs(admin),
     );
     groupsViewModel = GroupsViewModel(groupAdminRepository: groupRepository);

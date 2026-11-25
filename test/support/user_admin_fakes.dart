@@ -4,9 +4,11 @@ import 'package:echurch_desktop/core/result.dart';
 import 'package:echurch_desktop/data/repositories/auth_session/auth_session_repository_local.dart';
 import 'package:echurch_desktop/data/repositories/church/church_repository.dart';
 import 'package:echurch_desktop/data/repositories/group_admin/group_admin_repository.dart';
+import 'package:echurch_desktop/data/repositories/member/member_repository.dart';
 import 'package:echurch_desktop/data/repositories/user_admin/user_admin_repository.dart';
 import 'package:echurch_desktop/domain/models/auth/auth_session.dart';
 import 'package:echurch_desktop/domain/models/church/church_summary.dart';
+import 'package:echurch_desktop/domain/models/member/member.dart';
 import 'package:echurch_desktop/domain/models/user/managed_user.dart';
 import 'package:echurch_desktop/domain/models/user/security_group.dart';
 import 'package:echurch_desktop/domain/use_cases/auth/auth_logout_use_case.dart';
@@ -63,6 +65,8 @@ class FakeUserAdminRepository implements UserAdminRepository {
   final activeCalls = <({int userId, bool active})>[];
   final resetCalls = <({int userId, String? temporaryPassword})>[];
   final groupCalls = <({int userId, Set<int> groupIds})>[];
+  final personCalls = <({int userId, int? personId})>[];
+  AppException? personError;
 
   @override
   Future<Result<List<ManagedUser>>> list() async => listError == null ? Result.ok(stored) : Result.error(listError!);
@@ -100,6 +104,28 @@ class FakeUserAdminRepository implements UserAdminRepository {
       groupIds: current.groupIds,
       churchId: church.id,
       churchName: church.name,
+    );
+    stored = [for (final user in stored) user.id == userId ? updated : user];
+    return Result.ok(updated);
+  }
+
+  @override
+  Future<Result<ManagedUser>> setPerson({required int userId, int? personId}) async {
+    personCalls.add((userId: userId, personId: personId));
+    if (personError case final error?) return Result.error(error);
+    final current = stored.firstWhere((user) => user.id == userId);
+    final updated = ManagedUser(
+      id: current.id,
+      login: current.login,
+      name: current.name,
+      active: current.active,
+      firstAccess: current.firstAccess,
+      groups: current.groups,
+      groupIds: current.groupIds,
+      churchId: current.churchId,
+      churchName: current.churchName,
+      personId: personId,
+      personName: personId == null ? null : 'Membro $personId',
     );
     stored = [for (final user in stored) user.id == userId ? updated : user];
     return Result.ok(updated);
@@ -161,4 +187,25 @@ class FakeChurchRepository([final List<ChurchSummary> stored = churches]) implem
 
   @override
   Future<Result<List<ChurchSummary>>> list() async => listError == null ? Result.ok(stored) : Result.error(listError!);
+}
+
+/// Busca de membros para ligar ao usuário (só `search` é usado nas telas de usuários).
+class FakeMemberSearchRepository implements MemberRepository {
+  final texts = <String>[];
+
+  @override
+  Future<Result<MemberPage>> search({int? churchId, MemberStatus? status, String? text, int? ecclesiasticalRoleId, int page = 0, int size = 20}) async {
+    texts.add(text ?? '');
+    return const Result.ok(
+      MemberPage(
+        items: [MemberRow(id: 10, name: 'João Pedro', status: MemberStatus.active, churchName: 'Sede - Rolândia')],
+        total: 1,
+        page: 0,
+        size: 8,
+      ),
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }

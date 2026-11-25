@@ -18,6 +18,7 @@ class const UsersBindings({
             userAdminRepository: context.read(),
             groupAdminRepository: context.read(),
             churchRepository: context.read(),
+            memberRepository: context.read(),
             sessionNotifier: context.read(),
           ).initialized(),
         ),

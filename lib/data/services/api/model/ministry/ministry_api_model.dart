@@ -17,11 +17,21 @@ class const MinistryApiModel({
   final String? viceLeaderName,
   final int? memberCount,
   final bool? active,
+  final bool? canEditMembers,
 }) extends Equatable {
   factory MinistryApiModel.fromJson(Map<String, dynamic> json) => _$MinistryApiModelFromJson(json);
 
   @override
-  List<Object?> get props => [id, defaultName, name, churchId, churchName, leaderId, leaderName, viceLeaderId, viceLeaderName, memberCount, active];
+  List<Object?> get props => [id, defaultName, name, churchId, churchName, leaderId, leaderName, viceLeaderId, viceLeaderName, memberCount, active, canEditMembers];
+}
+
+/// Membro para incluir no ministério (MinistryCandidateDTO).
+@JsonSerializable(createToJson: false)
+class const MinistryCandidateApiModel({required final int id, final String? name, final String? ecclesiasticalRoleName, final String? churchName}) extends Equatable {
+  factory MinistryCandidateApiModel.fromJson(Map<String, dynamic> json) => _$MinistryCandidateApiModelFromJson(json);
+
+  @override
+  List<Object?> get props => [id, name, ecclesiasticalRoleName, churchName];
 }
 
 /// Cadastrar ou editar (MinistryInputDTO).

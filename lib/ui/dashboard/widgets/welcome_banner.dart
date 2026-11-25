@@ -78,6 +78,9 @@ class WelcomeBannerTextWidget extends StatelessWidget {
     if (roles.contains('ROLE_SECRETARIA')) {
       return 'Gerencie os membros, crianças e pedidos de oração da nossa igreja.';
     }
+    if (user != null && !user.canSeeMembers && user.isMinistryLeader) {
+      return 'Acompanhe os membros dos ministérios que você lidera.';
+    }
     return 'Consulte os membros, aniversariantes e eventos da nossa igreja.';
   }
 

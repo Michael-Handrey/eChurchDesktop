@@ -26,6 +26,13 @@ class MinistryRepositoryRemote({required final MinistryApi _api}) implements Min
   Future<Result<List<MemberRow>>> members(int id) => _guard(() async => _rows(await _api.members(id)));
 
   @override
+  Future<Result<List<MinistryCandidate>>> candidates(int id, String text) => _guard(
+    () async => [
+      for (final item in await _api.candidates(id, text.trim())) MinistryCandidate(id: item.id, name: (item.name ?? '').trim(), role: item.ecclesiasticalRoleName?.trim(), church: item.churchName?.trim()),
+    ],
+  );
+
+  @override
   Future<Result<List<MemberRow>>> addMembers(int id, List<int> personIds) => _guard(() async => _rows(await _api.addMembers(id, MinistryMembersInput(personIds: personIds))));
 
   @override
@@ -45,6 +52,7 @@ class MinistryRepositoryRemote({required final MinistryApi _api}) implements Min
     viceLeaderName: model.viceLeaderName?.trim(),
     memberCount: model.memberCount ?? 0,
     active: model.active ?? true,
+    canEditMembers: model.canEditMembers ?? false,
   );
 
   Future<Result<T>> _guard<T>(Future<T> Function() call) async {

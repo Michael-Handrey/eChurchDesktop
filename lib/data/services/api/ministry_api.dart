@@ -5,7 +5,8 @@ import 'package:retrofit/retrofit.dart';
 
 part 'ministry_api.g.dart';
 
-/// Ministérios (`MinistryResource`): ler qualquer usuário; alterar Secretaria/Administrador.
+/// Ministérios (`MinistryResource`): ler qualquer usuário (o Líder só os que lidera); incluir e tirar membros
+/// Secretaria/Administrador ou o líder; alterar Secretaria/Administrador.
 @RestApi()
 abstract class MinistryApi {
   factory MinistryApi(Dio dio) = _MinistryApi;
@@ -25,6 +26,10 @@ abstract class MinistryApi {
 
   @GET('/v1/ministries/{id}/members')
   Future<List<MemberRowApiModel>> members(@Path('id') int id);
+
+  /// Busca do "Incluir membro": ativos que ainda não estão no ministério (nome, cargo e igreja).
+  @GET('/v1/ministries/{id}/candidates')
+  Future<List<MinistryCandidateApiModel>> candidates(@Path('id') int id, @Query('text') String text);
 
   @POST('/v1/ministries/{id}/members')
   Future<List<MemberRowApiModel>> addMembers(@Path('id') int id, @Body() MinistryMembersInput request);

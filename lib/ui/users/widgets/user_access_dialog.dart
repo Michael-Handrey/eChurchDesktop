@@ -1,12 +1,14 @@
 import 'package:echurch_desktop/core/result.dart';
+import 'package:echurch_desktop/domain/models/member/member_form.dart';
 import 'package:echurch_desktop/domain/models/user/managed_user.dart';
+import 'package:echurch_desktop/ui/members/form/widgets/form_fields.dart';
 import 'package:echurch_desktop/ui/core/share/app_error_banner.dart';
 import 'package:echurch_desktop/ui/core/share/error_messages.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/users/users_viewmodel.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Igreja e grupos do usuário. Fecha devolvendo `true` quando salvou.
+/// Igreja, membro ligado e grupos do usuário. Fecha devolvendo `true` quando salvou.
 class const UserAccessDialog({
   super.key,
   required final UsersViewModel viewModel,
@@ -25,6 +27,7 @@ class const UserAccessDialog({
 class _UserAccessDialogState extends State<UserAccessDialog> {
   late final _selected = {...widget.user.groupIds};
   late int? _churchId = widget.user.churchId;
+  late SpouseOption? _person = widget.user.personId == null ? null : SpouseOption(id: widget.user.personId, name: widget.user.personName ?? '');
   String? _error;
 
   ManagedUser get _user => widget.user;
@@ -51,7 +54,7 @@ class _UserAccessDialogState extends State<UserAccessDialog> {
 
   bool get _groupsChanged => _selected.length != _user.groupIds.length || !_selected.containsAll(_user.groupIds);
 
-  bool get _changed => _churchId != _user.churchId || _groupsChanged;
+  bool get _changed => _churchId != _user.churchId || _person?.id != _user.personId || _groupsChanged;
 
   void _toggle(int id, bool selected) => setState(() {
     selected ? _selected.add(id) : _selected.remove(id);
@@ -60,7 +63,7 @@ class _UserAccessDialogState extends State<UserAccessDialog> {
 
   void _submit() {
     if (!_changed || _selected.isEmpty || widget.viewModel.updateAccess.running) return;
-    widget.viewModel.updateAccess.execute((user: _user, churchId: _churchId, groupIds: {..._selected}));
+    widget.viewModel.updateAccess.execute((user: _user, churchId: _churchId, personId: _person?.id, groupIds: {..._selected}));
   }
 
   @override
@@ -104,6 +107,43 @@ class _UserAccessDialogState extends State<UserAccessDialog> {
                         _churchId = value;
                         _error = null;
                       }),
+              ),
+              const SizedBox(height: 4),
+              const _SectionTitle('Membro'),
+              const Text(
+                'O cadastro de membro deste usuário. É o que mostra de quais ministérios ele é líder '
+                '(grupo Líder de ministério).',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
+              ),
+              Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: LookupField<SpouseOption>(
+                      label: 'Membro',
+                      selected: _person,
+                      labelOf: (option) => option.name,
+                      subtitleOf: (option) => option.church,
+                      search: widget.viewModel.searchMembers,
+                      enabled: !running,
+                      onSelected: (option) => setState(() {
+                        _person = option;
+                        _error = null;
+                      }),
+                    ),
+                  ),
+                  if (_person != null)
+                    IconButton(
+                      tooltip: 'Desfazer o vínculo',
+                      onPressed: running
+                          ? null
+                          : () => setState(() {
+                              _person = null;
+                              _error = null;
+                            }),
+                      icon: const Icon(Icons.link_off, size: 20),
+                    ),
+                ],
               ),
               const SizedBox(height: 4),
               const _SectionTitle('Grupos'),

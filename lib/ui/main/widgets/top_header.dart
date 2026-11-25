@@ -1,3 +1,4 @@
+import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
 import 'package:echurch_desktop/core/church/church_context_notifier.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/main/widgets/member_quick_search.dart';
@@ -21,9 +22,11 @@ class TopHeaderWidget extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final compact = constraints.maxWidth < compactWidth;
+          // Busca rápida de membros: só quem vê membros (o Líder de ministério sozinho não).
+          final canSeeMembers = context.watch<AuthSessionNotifier>().user?.canSeeMembers ?? false;
           return Row(
             children: [
-              const Expanded(child: MemberQuickSearchWidget()),
+              Expanded(child: canSeeMembers ? const MemberQuickSearchWidget() : const SizedBox.shrink()),
               SizedBox(width: compact ? 12 : 24),
               const NotificationBadgeWidget(),
               SizedBox(width: compact ? 8 : 20),

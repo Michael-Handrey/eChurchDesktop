@@ -3,6 +3,7 @@ import 'package:echurch_desktop/data/services/api/model/user/password_reset_api_
 import 'package:echurch_desktop/data/services/api/model/user/user_active_request.dart';
 import 'package:echurch_desktop/data/services/api/model/user/user_church_request.dart';
 import 'package:echurch_desktop/data/services/api/model/user/user_groups_request.dart';
+import 'package:echurch_desktop/data/services/api/model/user/user_person_request.dart';
 import 'package:echurch_desktop/data/services/api/model/user/user_summary_api_model.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -22,6 +23,10 @@ abstract class UserAdminApi {
 
   @PUT('/v1/users/{id}/active')
   Future<UserSummaryApiModel> setActive(@Path('id') int id, @Body() UserActiveRequest request);
+
+  /// Liga o usuário ao cadastro de membro dele (`personId` nulo desfaz).
+  @PUT('/v1/users/{id}/person')
+  Future<UserSummaryApiModel> setPerson(@Path('id') int id, @Body() UserPersonRequest request);
 
   @PUT('/v1/users/{id}/church')
   Future<UserSummaryApiModel> setChurch(@Path('id') int id, @Body() UserChurchRequest request);

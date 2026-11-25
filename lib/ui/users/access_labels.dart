@@ -5,6 +5,7 @@ final class AccessLabels._() {
     'ADMIN' => 'Administrador',
     'SECRETARIA' => 'Secretaria',
     'USUARIO' => 'Usuário',
+    'LIDER_MINISTERIO' => 'Líder de ministério',
     _ => name,
   };
 
@@ -12,6 +13,7 @@ final class AccessLabels._() {
     'ROLE_ADMIN' => 'Administração',
     'ROLE_SECRETARIA' => 'Secretaria',
     'ROLE_USER' => 'Usuário',
+    'ROLE_LIDER_MINISTERIO' => 'Líder de ministério',
     _ => name,
   };
 
@@ -19,6 +21,7 @@ final class AccessLabels._() {
     'ROLE_ADMIN' => 'Gerencia usuários, grupos, permissões e senhas.',
     'ROLE_SECRETARIA' => 'Funções da secretaria (membros, cadastros e documentos).',
     'ROLE_USER' => 'Acesso básico ao sistema.',
+    'ROLE_LIDER_MINISTERIO' => 'Inclui e tira membros dos ministérios que lidera (o usuário precisa estar ligado ao cadastro de membro dele).',
     _ => name,
   };
 }

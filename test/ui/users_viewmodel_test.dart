@@ -18,6 +18,7 @@ void main() {
       userAdminRepository: repository,
       groupAdminRepository: groupRepository,
       churchRepository: FakeChurchRepository(),
+      memberRepository: FakeMemberSearchRepository(),
       sessionNotifier: sessionSignedInAs(admin),
     );
     await viewModel.load.execute();
@@ -91,7 +92,7 @@ void main() {
   });
 
   test('trocar grupos atualiza a linha do usuário', () async {
-    await viewModel.updateAccess.execute((user: users[2], churchId: users[2].churchId, groupIds: {3, 2}));
+    await viewModel.updateAccess.execute((user: users[2], churchId: users[2].churchId, personId: null, groupIds: {3, 2}));
 
     expect(repository.groupCalls.single.userId, 3);
     expect(repository.groupCalls.single.groupIds, {3, 2});
@@ -111,7 +112,7 @@ void main() {
     viewModel.setGroupFilter(const WithoutGroup());
     expect(viewModel.rows, isEmpty);
 
-    await viewModel.updateAccess.execute((user: users[2], churchId: users[2].churchId, groupIds: {}));
+    await viewModel.updateAccess.execute((user: users[2], churchId: users[2].churchId, personId: null, groupIds: {}));
     expect(viewModel.rows.map((row) => row.user.login), ['joao']);
 
     viewModel.setGroupFilter(const AllGroups());
@@ -160,7 +161,7 @@ void main() {
 
   test('erro ao trocar grupos (ex.: admin tirando o próprio acesso) não mexe na lista', () async {
     repository.groupsError = const ValidationException('Você não pode tirar o seu próprio acesso de administrador.');
-    await viewModel.updateAccess.execute((user: users[0], churchId: users[0].churchId, groupIds: {}));
+    await viewModel.updateAccess.execute((user: users[0], churchId: users[0].churchId, personId: null, groupIds: {}));
 
     expect(viewModel.updateAccess.result, isA<Error<void>>());
     expect(viewModel.rows.firstWhere((row) => row.user.id == 1).groupsLabel, 'Administrador');
@@ -168,7 +169,7 @@ void main() {
 
   test('trocar a igreja envia só a igreja quando os grupos não mudam', () async {
     final joao = users[2];
-    await viewModel.updateAccess.execute((user: joao, churchId: 3, groupIds: {...joao.groupIds}));
+    await viewModel.updateAccess.execute((user: joao, churchId: 3, personId: null, groupIds: {...joao.groupIds}));
 
     expect(repository.churchCalls.single, (userId: 3, churchId: 3));
     expect(repository.groupCalls, isEmpty);
@@ -177,7 +178,7 @@ void main() {
 
   test('igreja e grupos mudando juntos: as duas alterações são enviadas', () async {
     final joao = users[2];
-    await viewModel.updateAccess.execute((user: joao, churchId: 2, groupIds: {2, 3}));
+    await viewModel.updateAccess.execute((user: joao, churchId: 2, personId: null, groupIds: {2, 3}));
 
     expect(repository.churchCalls.single.churchId, 2);
     expect(repository.groupCalls.single.groupIds, {2, 3});
@@ -187,10 +188,29 @@ void main() {
   test('falha ao trocar a igreja não envia os grupos', () async {
     repository.churchError = const ValidationException('Igreja não encontrada. Atualize a lista e tente de novo.');
     final joao = users[2];
-    await viewModel.updateAccess.execute((user: joao, churchId: 2, groupIds: {2, 3}));
+    await viewModel.updateAccess.execute((user: joao, churchId: 2, personId: null, groupIds: {2, 3}));
 
     expect(viewModel.updateAccess.result, isA<Error<void>>());
     expect(repository.groupCalls, isEmpty);
+  });
+
+  test('ligar ao membro envia só o membro; desligar envia nulo', () async {
+    final joao = users[2];
+    await viewModel.updateAccess.execute((user: joao, churchId: joao.churchId, personId: 10, groupIds: {...joao.groupIds}));
+
+    expect(repository.personCalls.single, (userId: 3, personId: 10));
+    expect(repository.churchCalls, isEmpty);
+    expect(repository.groupCalls, isEmpty);
+    final linked = viewModel.rows.firstWhere((row) => row.user.id == 3).user;
+    expect(linked.personId, 10);
+
+    await viewModel.updateAccess.execute((user: linked, churchId: linked.churchId, personId: null, groupIds: {...linked.groupIds}));
+    expect(repository.personCalls.last, (userId: 3, personId: null));
+  });
+
+  test('busca de membros para ligar: pelo menos duas letras', () async {
+    expect(await viewModel.searchMembers('j'), isEmpty);
+    expect((await viewModel.searchMembers('joão')).single.name, 'João Pedro');
   });
 
   test('igrejas carregadas para o diálogo de acesso', () {

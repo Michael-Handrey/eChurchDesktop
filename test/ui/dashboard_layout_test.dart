@@ -44,7 +44,7 @@ HomeData _data({List<Birthday>? today, List<Birthday>? next}) => HomeData(
         Birthday(name: 'Lucas Almeida', date: _today.add(const Duration(days: 3)), age: 9, isChild: true),
       ],
   activities: [
-    RecentActivity(id: 1, title: 'João da Silva', type: ActivityType.member, at: DateTime.now().subtract(const Duration(hours: 2))),
+    RecentActivity(id: 1, title: 'João da Silva', type: ActivityType.member, at: DateTime.now().subtract(const Duration(minutes: 5))),
     RecentActivity(id: 2, title: 'Pedido de oração de Família Oliveira', type: ActivityType.prayer, at: DateTime.now().subtract(const Duration(days: 3))),
   ],
 );
@@ -174,7 +174,7 @@ void main() {
   testWidgets('últimos registros com o tipo e há quanto tempo', (tester) async {
     await pumpHome(tester);
     expect(find.text('João da Silva'), findsOneWidget);
-    expect(find.text('Há 2 horas'), findsOneWidget);
+    expect(find.text('Há 5 minutos'), findsOneWidget, reason: 'em minutos: não muda de dia perto da meia-noite');
     expect(find.text('Pedido de oração de Família Oliveira'), findsOneWidget);
     expect(find.text('Há 3 dias'), findsOneWidget);
     expect(find.text('Oração'), findsOneWidget);

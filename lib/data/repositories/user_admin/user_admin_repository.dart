@@ -14,6 +14,9 @@ abstract interface class UserAdminRepository {
   /// Troca a igreja (sede ou filial) do usuário. Devolve o usuário atualizado.
   Future<Result<ManagedUser>> setChurch({required int userId, required int churchId});
 
+  /// Liga o usuário ao cadastro de membro dele ([personId] nulo desfaz). Devolve o usuário atualizado.
+  Future<Result<ManagedUser>> setPerson({required int userId, int? personId});
+
   /// Troca os grupos do usuário. Devolve o usuário atualizado.
   Future<Result<ManagedUser>> updateGroups({required int userId, required Set<int> groupIds});
 }

@@ -37,18 +37,20 @@ class MainScreen extends StatelessWidget {
     );
   }
 
-  /// Conteúdo conforme o item da sidebar. A tela de usuários só abre para administrador
-  /// (a API também recusa para os demais).
+  /// Conteúdo conforme o item da sidebar. A tela de usuários só abre para administrador, e a de membros
+  /// para quem pode ver membros (a API também recusa para os demais).
   Widget _content(BuildContext context) {
     final selected = context.watch<DashboardViewModel>().selectedNavItem;
-    final isAdmin = context.watch<AuthSessionNotifier>().user?.isAdmin ?? false;
+    final user = context.watch<AuthSessionNotifier>().user;
+    final isAdmin = user?.isAdmin ?? false;
+    final canSeeMembers = user?.canSeeMembers ?? false;
 
     if (selected == DashboardViewModel.usersNavItem && isAdmin) {
       return UsersBindings(
         screenBuilder: (context) => UsersScreen(viewModel: context.read(), groupsViewModel: context.read()),
       );
     }
-    if (selected == DashboardViewModel.membersNavItem) {
+    if (selected == DashboardViewModel.membersNavItem && canSeeMembers) {
       return MembersBindings(screenBuilder: (context) => MembersScreen(viewModel: context.read()));
     }
     if (selected == DashboardViewModel.ministriesNavItem) {
@@ -57,6 +59,8 @@ class MainScreen extends StatelessWidget {
     if (selected == DashboardViewModel.prayerRequestsNavItem) {
       return PrayerRequestsBindings(screenBuilder: (context) => PrayerRequestsScreen(viewModel: context.read()));
     }
+    // Líder de ministério sozinho: tela inicial só com as boas-vindas (sem os números nem os membros).
+    if (!canSeeMembers) return const DashboardScreen(showChurchData: false);
     // Tela inicial: os dados são buscados de novo cada vez que ela abre (e quando a igreja muda).
     return ChangeNotifierProvider(
       create: (context) => HomeViewModel(repository: context.read(), churchContext: context.read()).initialized(),

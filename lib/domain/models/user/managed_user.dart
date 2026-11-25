@@ -17,6 +17,10 @@ class const ManagedUser({
   /// Igreja (sede ou filial) do usuário; [churchName] já vem pronto para a tela ("Sede - Rolândia").
   final int? churchId,
   final String? churchName,
+
+  /// Cadastro de membro ligado ao usuário (nulo = sem vínculo): diz de quais ministérios ele é líder.
+  final int? personId,
+  final String? personName,
 }) extends Equatable {
   ManagedUser copyWith({bool? active, bool? firstAccess, List<String>? groups, List<int>? groupIds}) => ManagedUser(
     id: id,
@@ -24,6 +28,8 @@ class const ManagedUser({
     name: name,
     churchId: churchId,
     churchName: churchName,
+    personId: personId,
+    personName: personName,
     active: active ?? this.active,
     firstAccess: firstAccess ?? this.firstAccess,
     groups: groups ?? this.groups,
@@ -31,7 +37,7 @@ class const ManagedUser({
   );
 
   @override
-  List<Object?> get props => [id, login, name, active, firstAccess, groups, groupIds, churchId, churchName];
+  List<Object?> get props => [id, login, name, active, firstAccess, groups, groupIds, churchId, churchName, personId, personName];
 }
 
 /// Resultado da redefinição: a senha provisória só existe aqui (mostrar uma vez e descartar).
