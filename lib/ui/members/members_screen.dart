@@ -210,7 +210,10 @@ class const _Toolbar({required final MembersViewModel viewModel}) extends Statel
         Flexible(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 260),
-            child: TextField(
+            // A busca continua no viewmodel: ao voltar do formulário (ou de outra aba), o campo começa com ela.
+            child: TextFormField(
+              key: const ValueKey('member-search'),
+              initialValue: viewModel.text,
               onChanged: viewModel.setText,
               decoration: InputDecoration(
                 isDense: true,

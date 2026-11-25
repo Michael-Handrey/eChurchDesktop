@@ -102,10 +102,14 @@ class const CityOption({required final int id, required final String name, final
 class const MemberFormOptions({
   final List<NamedOption> roles = const [],
   final List<NamedOption> ministries = const [],
+
+  /// Funções ministeriais (conselho, tesouraria, secretaria), na ordem do cadastro. Sem as de
+  /// Líder/Vice-líder: a liderança vem do cadastro de Ministérios.
+  final List<NamedOption> ministerialRoles = const [],
   final List<NationalityOption> nationalities = const [NationalityOption.brazilian],
 }) extends Equatable {
   @override
-  List<Object?> get props => [roles, ministries, nationalities];
+  List<Object?> get props => [roles, ministries, ministerialRoles, nationalities];
 }
 
 /// Endereço achado pelo CEP. [cityId]/[districtId]: os do cadastro, quando existem.
@@ -163,6 +167,10 @@ class const MemberDraft({
   final int? churchId,
   final int? ecclesiasticalRoleId,
   final Set<int> ministryIds = const {},
+  final Set<int> ministerialRoleIds = const {},
+
+  /// Só leitura (do cadastro de Ministérios): "Líder de Varões de Guerra".
+  final List<String> leaderships = const [],
   final DateTime? baptismDate,
   final DateTime? acceptedJesusDate,
   final String notes = '',
@@ -214,6 +222,7 @@ class const MemberDraft({
     int? ecclesiasticalRoleId,
     bool clearRole = false,
     Set<int>? ministryIds,
+    Set<int>? ministerialRoleIds,
     DateTime? baptismDate,
     bool clearBaptismDate = false,
     DateTime? acceptedJesusDate,
@@ -252,6 +261,8 @@ class const MemberDraft({
     churchId: churchId ?? this.churchId,
     ecclesiasticalRoleId: clearRole ? null : ecclesiasticalRoleId ?? this.ecclesiasticalRoleId,
     ministryIds: ministryIds ?? this.ministryIds,
+    ministerialRoleIds: ministerialRoleIds ?? this.ministerialRoleIds,
+    leaderships: leaderships,
     baptismDate: clearBaptismDate ? null : baptismDate ?? this.baptismDate,
     acceptedJesusDate: clearAcceptedJesusDate ? null : acceptedJesusDate ?? this.acceptedJesusDate,
     notes: notes ?? this.notes,
@@ -303,6 +314,8 @@ class const MemberDraft({
     churchId,
     ecclesiasticalRoleId,
     ministryIds,
+    ministerialRoleIds,
+    leaderships,
     baptismDate,
     acceptedJesusDate,
     notes,

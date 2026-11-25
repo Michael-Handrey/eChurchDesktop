@@ -183,7 +183,9 @@ class const _UsersTab({
             ),
             SizedBox(
               width: 300,
-              child: TextField(
+              // A busca continua no viewmodel: ao voltar do formulário (ou de outra aba), o campo começa com ela.
+              child: TextFormField(
+                initialValue: viewModel.search,
                 onChanged: viewModel.setSearch,
                 decoration: InputDecoration(
                   isDense: true,

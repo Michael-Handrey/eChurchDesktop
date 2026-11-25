@@ -44,7 +44,7 @@ class _FakeMemberRepository implements MemberRepository {
   @override
   Future<Result<MemberDetails>> details(int id) async {
     final row = stored.firstWhere((item) => item.id == id);
-    return Result.ok(MemberDetails(id: id, name: row.name, status: row.status, phone: row.phone, cpf: '123.456.789-00', ministryNames: const ['Louvor'], birthDate: DateTime(1980, 3, 15)));
+    return Result.ok(MemberDetails(id: id, name: row.name, status: row.status, phone: row.phone, cpf: '123.456.789-00', ministryNames: const ['Louvor'], leaderships: const ['Vice-líder de Louvor'], ministerialRoleNames: const ['PRIMEIRO(A) TESOUREIRO(A)'], birthDate: DateTime(1980, 3, 15)));
   }
 
   @override
@@ -342,6 +342,24 @@ void main() {
       expect(find.text('Desativar membro'), findsOneWidget, reason: 'diálogo continua aberto');
     });
 
+    testWidgets('voltar para a lista (do formulário, por exemplo) mantém o texto da busca no campo', (tester) async {
+      final viewModel = await pumpScreen(tester, _secretaria);
+      await tester.enterText(find.byKey(const ValueKey('member-search')), 'ana');
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 600)));
+      await tester.pumpAndSettle();
+      expect(viewModel.text, 'ana');
+
+      // A lista sai da tela (formulário no lugar) e volta com o mesmo viewmodel.
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: MembersScreen(viewModel: viewModel)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(TextFormField, 'ana'), findsOneWidget, reason: 'campo e lista falam da mesma busca');
+    });
+
     testWidgets('clicar no nome abre os detalhes buscados na API', (tester) async {
       await pumpScreen(tester, _secretaria);
       await tester.tap(find.text('Ana Souza'));
@@ -356,7 +374,11 @@ void main() {
       double top(String label) => tester.getTopLeft(find.descendant(of: find.byType(AlertDialog), matching: find.text(label))).dy;
       expect(top('Igreja'), lessThan(top('Cargo')));
       expect(top('Cargo'), lessThan(top('Ministérios')));
-      expect(top('Ministérios'), lessThan(top('Batismo')));
+      expect(top('Ministérios'), lessThan(top('Liderança')));
+      expect(top('Liderança'), lessThan(top('Funções')));
+      expect(top('Funções'), lessThan(top('Batismo')));
+      expect(find.text('Vice-líder de Louvor'), findsOneWidget);
+      expect(find.text('PRIMEIRO(A) TESOUREIRO(A)'), findsOneWidget);
       expect(find.text('—'), findsWidgets);
     });
   });

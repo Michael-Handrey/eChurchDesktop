@@ -38,6 +38,8 @@ extension MemberEditApiModelMapper on MemberEditApiModel {
       churchId: churchId,
       ecclesiasticalRoleId: ecclesiasticalRoleId,
       ministryIds: {...?ministryIds},
+      ministerialRoleIds: {...?ministerialRoleIds},
+      leaderships: leaderships ?? const [],
       baptismDate: _date(baptismDate),
       acceptedJesusDate: _date(acceptedJesusDate),
       notes: notes ?? '',
@@ -87,6 +89,7 @@ extension MemberDraftMapper on MemberDraft {
     status: status,
     ecclesiasticalRoleId: ecclesiasticalRoleId,
     ministryIds: ministryIds.toList(),
+    ministerialRoleIds: ministerialRoleIds.toList(),
     churchId: churchId,
     deathDate: _iso(deathDate),
     acceptedJesusDate: _iso(acceptedJesusDate),
@@ -99,15 +102,21 @@ extension MemberOptionsApiModelMapper on MemberOptionsApiModel {
   MemberFormOptions toDomain() => MemberFormOptions(
     roles: _options(ecclesiasticalRoles),
     ministries: _options(ministries),
+    ministerialRoles: _options(ministerialRoles, sorted: false),
     nationalities: [
       for (final item in nationalityOptions ?? const <NationalityApiModel>[]) NationalityOption(value: item.value, label: item.label ?? item.value),
     ].ifEmpty([NationalityOption.brazilian]),
   );
 
-  static List<NamedOption> _options(List<MemberOptionApiModel>? items) => [
-    for (final item in items ?? const <MemberOptionApiModel>[])
-      if ((item.name ?? '').trim().isNotEmpty) NamedOption(id: item.id, name: item.name!.trim()),
-  ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  /// [sorted] falso mantém a ordem da API (funções ministeriais: conselho, tesouraria, secretaria).
+  static List<NamedOption> _options(List<MemberOptionApiModel>? items, {bool sorted = true}) {
+    final options = [
+      for (final item in items ?? const <MemberOptionApiModel>[])
+        if ((item.name ?? '').trim().isNotEmpty) NamedOption(id: item.id, name: item.name!.trim()),
+    ];
+    if (sorted) options.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return options;
+  }
 }
 
 extension CepApiModelMapper on CepApiModel {

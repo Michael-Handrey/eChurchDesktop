@@ -79,6 +79,8 @@ class const MemberDetailsApiModel({
   final String? status,
   final String? ecclesiasticalRoleName,
   final List<String>? ministryNames,
+  final List<String>? ministerialRoleNames,
+  final List<String>? leaderships,
   final String? churchName,
   final String? birthDate,
   final int? birthDay,
@@ -114,6 +116,8 @@ class const MemberDetailsApiModel({
     status,
     ecclesiasticalRoleName,
     ministryNames,
+    ministerialRoleNames,
+    leaderships,
     churchName,
     birthDate,
     birthDay,
@@ -151,17 +155,18 @@ class const MemberOptionApiModel({required final int id, final String? name}) ex
   List<Object?> get props => [id, name];
 }
 
-/// `GET /people/options`: cargos e ministérios (id + nome) e nacionalidades (valor + nome).
+/// `GET /people/options`: cargos, ministérios e funções ministeriais (id + nome) e nacionalidades (valor + nome).
 @JsonSerializable(createToJson: false)
 class const MemberOptionsApiModel({
   @JsonKey(name: 'cargosEclesiasticos') final List<MemberOptionApiModel>? ecclesiasticalRoles,
   @JsonKey(name: 'ministeriosList') final List<MemberOptionApiModel>? ministries,
+  @JsonKey(name: 'funcoesMinisteriais') final List<MemberOptionApiModel>? ministerialRoles,
   final List<NationalityApiModel>? nationalityOptions,
 }) extends Equatable {
   factory MemberOptionsApiModel.fromJson(Map<String, dynamic> json) => _$MemberOptionsApiModelFromJson(json);
 
   @override
-  List<Object?> get props => [ecclesiasticalRoles, ministries, nationalityOptions];
+  List<Object?> get props => [ecclesiasticalRoles, ministries, ministerialRoles, nationalityOptions];
 }
 
 /// Corpo de "desativar" (MemberDeactivationRequestDTO).

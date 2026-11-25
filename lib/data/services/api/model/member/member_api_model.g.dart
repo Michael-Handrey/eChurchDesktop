@@ -98,6 +98,8 @@ MemberDetailsApiModel _$MemberDetailsApiModelFromJson(
   status: json['status'] as String?,
   ecclesiasticalRoleName: json['ecclesiasticalRoleName'] as String?,
   ministryNames: (json['ministryNames'] as List<dynamic>?)?.map((e) => e as String).toList(),
+  ministerialRoleNames: (json['ministerialRoleNames'] as List<dynamic>?)?.map((e) => e as String).toList(),
+  leaderships: (json['leaderships'] as List<dynamic>?)?.map((e) => e as String).toList(),
   churchName: json['churchName'] as String?,
   birthDate: json['birthDate'] as String?,
   birthDay: (json['birthDay'] as num?)?.toInt(),
@@ -131,6 +133,8 @@ Map<String, dynamic> _$MemberDetailsApiModelToJson(
   'status': instance.status,
   'ecclesiasticalRoleName': instance.ecclesiasticalRoleName,
   'ministryNames': instance.ministryNames,
+  'ministerialRoleNames': instance.ministerialRoleNames,
+  'leaderships': instance.leaderships,
   'churchName': instance.churchName,
   'birthDate': instance.birthDate,
   'birthDay': instance.birthDay,
@@ -172,6 +176,7 @@ MemberOptionsApiModel _$MemberOptionsApiModelFromJson(
 ) => MemberOptionsApiModel(
   ecclesiasticalRoles: (json['cargosEclesiasticos'] as List<dynamic>?)?.map((e) => MemberOptionApiModel.fromJson(e as Map<String, dynamic>)).toList(),
   ministries: (json['ministeriosList'] as List<dynamic>?)?.map((e) => MemberOptionApiModel.fromJson(e as Map<String, dynamic>)).toList(),
+  ministerialRoles: (json['funcoesMinisteriais'] as List<dynamic>?)?.map((e) => MemberOptionApiModel.fromJson(e as Map<String, dynamic>)).toList(),
   nationalityOptions: (json['nationalityOptions'] as List<dynamic>?)?.map((e) => NationalityApiModel.fromJson(e as Map<String, dynamic>)).toList(),
 );
 

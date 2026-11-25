@@ -29,6 +29,8 @@ extension MemberDetailsApiModelMapper on MemberDetailsApiModel {
     status: MemberStatus.fromApi(status),
     ecclesiasticalRoleName: _text(ecclesiasticalRoleName),
     ministryNames: ministryNames ?? const [],
+    ministerialRoleNames: ministerialRoleNames ?? const [],
+    leaderships: leaderships ?? const [],
     churchName: _text(churchName),
     birthDate: _date(birthDate),
     birthDay: birthDay,

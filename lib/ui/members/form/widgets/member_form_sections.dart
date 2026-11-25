@@ -549,6 +549,40 @@ class const _Church(final MemberFormViewModel viewModel, final MemberFormControl
                     ),
                 ],
               ),
+            if (draft.leaderships.isNotEmpty)
+              Text(
+                '${draft.leaderships.join(' · ')} (no cadastro de Ministérios).',
+                key: const ValueKey('member-form-leaderships'),
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+              ),
+          ],
+        ),
+        Column(
+          crossAxisAlignment: .start,
+          spacing: 8,
+          children: [
+            const Text('Funções ministeriais', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+            if (viewModel.options.ministerialRoles.isEmpty)
+              const Text('Nenhuma função cadastrada.', style: TextStyle(color: AppColors.textMuted, fontSize: 12.5))
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final role in viewModel.options.ministerialRoles)
+                    FilterChip(
+                      label: Text(role.name),
+                      selected: draft.ministerialRoleIds.contains(role.id),
+                      onSelected: (selected) => viewModel.toggleMinisterialRole(role.id, selected),
+                      selectedColor: AppColors.primarySubtle,
+                      checkmarkColor: AppColors.primary,
+                    ),
+                ],
+              ),
+            const Text(
+              'Líder e vice-líder de ministério: no cadastro de Ministérios.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
           ],
         ),
       ],

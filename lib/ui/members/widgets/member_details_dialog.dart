@@ -93,6 +93,8 @@ class const _Details({required final MemberDetails member, required final bool f
           ('Igreja', member.churchName),
           ('Cargo', member.ecclesiasticalRoleName),
           ('Ministérios', member.ministryNames.isEmpty ? null : member.ministryNames.join(', ')),
+          ('Liderança', member.leaderships.isEmpty ? null : member.leaderships.join(', ')),
+          ('Funções', member.ministerialRoleNames.isEmpty ? null : member.ministerialRoleNames.join(', ')),
           if (full) ...[('Batismo', _date(member.baptismDate)), ('Aceitou Jesus', _date(member.acceptedJesusDate))],
         ],
       ),

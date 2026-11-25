@@ -77,6 +77,10 @@ class const MemberDetails({
   required final MemberStatus status,
   final String? ecclesiasticalRoleName,
   final List<String> ministryNames = const [],
+
+  /// Funções ministeriais e liderança (do cadastro de Ministérios: "Líder de Varões de Guerra").
+  final List<String> ministerialRoleNames = const [],
+  final List<String> leaderships = const [],
   final String? churchName,
   final DateTime? birthDate,
   final int? birthDay,
@@ -107,6 +111,8 @@ class const MemberDetails({
     status,
     ecclesiasticalRoleName,
     ministryNames,
+    ministerialRoleNames,
+    leaderships,
     churchName,
     birthDate,
     birthDay,

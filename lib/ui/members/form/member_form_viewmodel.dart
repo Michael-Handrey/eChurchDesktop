@@ -20,7 +20,7 @@ enum MemberFormSection {
   family('Família', {'maritalStatus', 'spouseName', 'spouseId', 'fatherName', 'motherName'}),
   address('Endereço', {'address', 'address.postalCode', 'address.streetType', 'address.streetName', 'address.streetNumber', 'address.complement', 'address.district', 'address.city'}),
   contact('Contato', {'contact', 'contact.phone', 'contact.secondaryPhone', 'contact.email'}),
-  church('Igreja', {'churchId', 'ecclesiasticalRoleId', 'ministryIds', 'baptismDate', 'acceptedJesusDate'}),
+  church('Igreja', {'churchId', 'ecclesiasticalRoleId', 'ministryIds', 'ministerialRoleIds', 'baptismDate', 'acceptedJesusDate'}),
   notes('Observações', {'notes'});
 
   const MemberFormSection(this.label, this.fields);
@@ -158,6 +158,12 @@ class MemberFormViewModel({
     final ids = {..._draft.ministryIds};
     selected ? ids.add(id) : ids.remove(id);
     update((draft) => draft.copyWith(ministryIds: ids), field: 'ministryIds');
+  }
+
+  void toggleMinisterialRole(int id, bool selected) {
+    final ids = {..._draft.ministerialRoleIds};
+    selected ? ids.add(id) : ids.remove(id);
+    update((draft) => draft.copyWith(ministerialRoleIds: ids), field: 'ministerialRoleIds');
   }
 
   Future<Result<void>> _load() async {

@@ -43,6 +43,8 @@ final _carla = MemberDraft(
   churchId: 1,
   ecclesiasticalRoleId: 2,
   ministryIds: const {1},
+  ministerialRoleIds: const {6},
+  leaderships: const ['Líder de Filhos da Promessa'],
 );
 
 class _FakeMemberRepository implements MemberRepository {
@@ -56,6 +58,10 @@ class _FakeMemberRepository implements MemberRepository {
       ministries: [
         NamedOption(id: 1, name: 'Louvor'),
         NamedOption(id: 3, name: 'Soldadinhos de Cristo'),
+      ],
+      ministerialRoles: [
+        NamedOption(id: 4, name: 'PRIMEIRO(A) TESOUREIRO(A)'),
+        NamedOption(id: 6, name: 'PRIMEIRO(A) SECRETÁRIO(A)'),
       ],
       nationalities: [
         NationalityOption.brazilian,
@@ -230,6 +236,16 @@ void main() {
       expect(viewModel.hasChanges, isFalse);
     });
 
+    test('funções ministeriais: marcar e desmarcar; vão no pedido', () async {
+      final viewModel = await viewModelFor(memberId: 10);
+      viewModel.toggleMinisterialRole(4, true);
+      viewModel.toggleMinisterialRole(6, false);
+      expect(viewModel.draft.ministerialRoleIds, {4});
+      expect(viewModel.hasChanges, isTrue);
+      expect(viewModel.draft.toInput().ministerialRoleIds, [4]);
+      expect(MemberDraft(name: 'Ana').toInput().ministerialRoleIds, isEmpty, reason: 'sempre enviado (sem ele a API mantém as antigas)');
+    });
+
     test('erros por campo da API aparecem no campo', () async {
       final viewModel = await viewModelFor(memberId: 10);
       members.saveError = const ValidationException('Revise os campos destacados.', fields: {'cpf': 'Já existe um cadastro com este CPF.'});
@@ -331,6 +347,11 @@ void main() {
 
       await tester.enterText(find.byKey(const ValueKey('member-form-contact.phone')), '43999990000');
       expect(viewModel.draft.phone, '(43) 99999-0000', reason: 'máscara de telefone');
+
+      expect(find.text('Funções ministeriais'), findsOneWidget);
+      expect(tester.widget<FilterChip>(find.widgetWithText(FilterChip, 'PRIMEIRO(A) SECRETÁRIO(A)')).selected, isTrue);
+      expect(tester.widget<FilterChip>(find.widgetWithText(FilterChip, 'PRIMEIRO(A) TESOUREIRO(A)')).selected, isFalse);
+      expect(find.text('Líder de Filhos da Promessa (no cadastro de Ministérios).'), findsOneWidget, reason: 'liderança só para ler');
 
       await tester.tap(find.text('Salvar'));
       await tester.runAsync(pumpEventQueue);
