@@ -1,7 +1,32 @@
 # Pessoas e família: membros, visitantes, crianças e adolescentes
 
-> **Situação:** em discussão (iniciada em 21/11/2026). Nada disto está implementado.
-> Próximo passo: conversar com a secretaria sobre o cadastro físico (seção 8) e então fechar as decisões (seção 9).
+> **Situação:** crianças e adolescentes **decidido em 24/11/2026** (seção 0, depois da conversa com a secretaria e com o Ministério Infantil), ainda não implementado. Cônjuge como vínculo e cadastros duplicados: feitos (seção 9).
+> As seções 2 a 5 e 7 eram a proposta anterior (criança no mesmo cadastro de pessoas, situação "Visitante"): **substituídas pela seção 0** no que diz respeito a crianças e adolescentes.
+
+---
+
+## 0. Decisão: cadastro próprio de Crianças e Adolescentes (24/11/2026)
+
+**Ideia:** um cadastro à parte, simples, só para os **filhos, netos, sobrinhos, enteados etc. dos membros**. Quando a criança é batizada ou faz profissão de fé, ela **migra** para o cadastro de pessoas (membro).
+
+| Ponto | Decisão |
+|---|---|
+| **Quem entra** | De **0 a 17 anos**, participando ou não de um ministério. Só com **pelo menos um responsável membro**. Criança sem responsável membro **não é cadastrada**: nos eventos ela entra só na margem (ex.: 52 crianças cadastradas, ~80 kits) |
+| **Dados** | Nome, data de nascimento, igreja, responsáveis e ministério (opcional). Nada é apagado (desativa, como os membros) |
+| **Responsáveis** | Membro escolhido na busca + **grau de parentesco** (mãe, pai, avó, avô, tio(a), padrasto, madrasta, outro). Não precisa ser casado. Se o membro escolhido tem **cônjuge vinculado**, o sistema **sugere incluir o cônjuge** também, com o grau de parentesco dele |
+| **Ministério** | Opcional, e **só os compatíveis com a idade**. A **faixa de idade fica no próprio ministério** (nova: idade mínima e máxima): Soldadinhos de Cristo (id 5, Ministério Infantil) **3 a 10**; **Projeto Aviva** (Ministério de Adolescentes, novo) **11 a 17**. 0 a 2 anos: cadastradas, sem ministério |
+| **Aniversário que muda a faixa** | **Nada muda sozinho:** a secretaria recebe uma **notificação** e decide. Casos: fez **3 anos** sem ministério ("incluir no Soldadinhos de Cristo?"); fez **11** no Soldadinhos (passar para o Projeto Aviva?); fez **18** sem virar membro |
+| **Migrar para membro** | "Tornar membro" abre o formulário de membro já preenchido (nome, nascimento, igreja, ministério; pai e mãe pelos responsáveis com esse parentesco). O cadastro da criança fica marcado como migrado para aquele membro (histórico). Como membro, pode entrar em **qualquer** ministério (a faixa de idade vale só no cadastro de criança) |
+| **Membro com menos de 18** | Os responsáveis continuam aparecendo na ficha do membro até os 18 (vindos do cadastro de criança de origem) |
+| **Líder e vice-líder de ministério** | Só com **18 anos ou mais** (vale para todo membro). Todo membro tem data de nascimento (obrigatória; banco local: nenhum sem). Hoje nenhum líder ou vice tem menos de 18 |
+| **Quem cadastra** | Secretaria e Administrador. Líder do Infantil ou do Aviva cadastrando: talvez depois, junto com o app mobile do líder |
+| **Tela inicial e relatórios** | O card "Crianças" passa a contar este cadastro (hoje: membros de até 10 anos); aniversariantes incluem as crianças; relatório por ministério com a **idade na data do evento** (ex.: Dia das Crianças). A margem de kits fica com quem organiza |
+| **Notificações** | Estrutura padrão (sino da barra superior → tela "Notificações"): **calculadas** pela API a partir dos dados (somem quando a situação é resolvida), da Secretaria e do Administrador, nas igrejas do alcance; cada uma leva ao cadastro; a secretaria pode **dispensar** (fica registrado quem e quando). Primeiras: as três da faixa e, já existentes, cadastros duplicados e cônjuges a revisar. Push (Windows/app mobile): ideia para depois |
+| **Depois** | Alergias, medicamentos, necessidades especiais, autorização de imagem, quem pode buscar a criança: **conversar com a secretaria** antes |
+
+**Ministério novo:** `default_name` "Ministério de Adolescentes", `name` "Projeto Aviva", sem líder e sem vice, igreja Sede, id pela `ministry_id_seq`. Entra no `dump_en.sql` e num script de `scripts/sql/` (banco local e produção).
+
+**Dados de hoje (banco local):** 23 membros com menos de 18 anos, 2 com menos de 12 (pela regra, menos de 12 não é membro: a secretaria confere se passam para o cadastro de criança).
 
 ---
 
@@ -173,13 +198,13 @@ Uma ficha "Família Santos Augusto" com a lista de pessoas e o papel de cada uma
 
 | # | Decisão | Proposta | Situação |
 |---|---|---|---|
-| 1 | Criança no mesmo cadastro de pessoas (não em cadastro separado) | sim, com faixa etária calculada | a confirmar |
-| 2 | Faixas: Criança 0–10, Pré-adolescente/Adolescente 11–17 | sim; limites configuráveis | a confirmar |
-| 3 | Situações: Membro (a partir de 12) e **Visitante** | sim | nome "Visitante" definido; regra a confirmar |
-| 4 | Responsáveis obrigatórios para menores de 18 (inclusive membros) | sim; aos 18 vira família | a confirmar |
-| 5 | Vínculo por responsáveis, não cadastro de família | sim | a confirmar |
+| 1 | Criança no mesmo cadastro de pessoas (não em cadastro separado) | sim, com faixa etária calculada | **substituída** (24/11): cadastro próprio de Crianças e Adolescentes, com migração para membro (seção 0) |
+| 2 | Faixas: Criança 0–10, Pré-adolescente/Adolescente 11–17 | sim; limites configuráveis | **decidida** (24/11): faixa no próprio ministério (Soldadinhos 3–10, Projeto Aviva 11–17); troca sozinha no aniversário |
+| 3 | Situações: Membro (a partir de 12) e **Visitante** | sim | **fora por enquanto** (24/11): criança fica no cadastro próprio até virar membro; visitante adulto não entra |
+| 4 | Responsáveis obrigatórios para menores de 18 (inclusive membros) | sim; aos 18 vira família | **decidida** (24/11): pelo menos um responsável membro, com grau de parentesco; aparecem na ficha do membro até os 18 |
+| 5 | Vínculo por responsáveis, não cadastro de família | sim | **decidida** (24/11) |
 | 6 | Cônjuge como vínculo (`spouse` + `spouse_name`) | sim | **feito** (2026-11-22): coluna `spouse`; campo Cônjuge do formulário busca membros ou usa só o nome |
 | 7 | Vincular casais existentes por rotina da secretaria, com confiança pelo endereço (regra da seção 6) | sim | **feito** (2026-11-22): Membros > "Revisar cônjuges" (em lote, um a um, sem sugestão); falta a secretaria revisar |
 | 10 | Cadastros duplicados (mesma pessoa com dois registros): como juntar | rotina própria, antes de vincular os cônjuges; depois, CPF único no banco (DATA-1 no TASKS da API: 9 CPFs repetidos no banco local) | **feito** (2026-11-22): tela Membros > "Cadastros duplicados"; falta a secretaria juntar os casos |
-| 8 | Campos extras da criança (saúde, autorizações, retirada) | depende da conversa com a secretaria | aberto |
-| 9 | O que fazer com visitantes que completam 18 anos | aviso para a secretaria decidir | aberto |
+| 8 | Campos extras da criança (saúde, autorizações, retirada) | depende da conversa com a secretaria | **depois** (24/11): conversar com a secretaria |
+| 9 | O que fazer com visitantes que completam 18 anos | aviso para a secretaria decidir | **não se aplica** (24/11): sem situação Visitante; a criança que faz 18 sem virar membro: aviso para a secretaria |

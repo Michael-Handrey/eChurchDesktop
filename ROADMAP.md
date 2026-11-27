@@ -2,7 +2,7 @@
 
 Funcionalidades planejadas e ainda não iniciadas. Para tarefas técnicas do backend, ver `TASKS.md` no projeto e-Church.
 
-**Última atualização:** 2026-11-20
+**Última atualização:** 2026-11-24
 
 ---
 
@@ -104,6 +104,26 @@ Hoje (banco local): 10 ministérios, todos da Sede, cada um com o **tipo** ("Min
 - **Futuro (app mobile):** levar as funções do **Líder de ministério** (ver os ministérios que lidera, incluir e tirar membros) para o **app mobile**. A API já está pronta para isso: `GET /api/v1/ministries` (só os que ele lidera), `GET /{id}/members`, `GET /{id}/candidates?text=`, `POST /{id}/members` e `POST /{id}/members/remove`, com o grupo Líder de ministério e o usuário ligado ao cadastro de membro.
 - **Funções ministeriais no cadastro do membro (feito, 2026-11-24):** o formulário mostra as **7 funções** que não são de ministério (presidente e vice do conselho administrativo, conselho fiscal, 1º/2º tesoureiro, 1º/2º secretário); os detalhes mostram **Funções** e **Liderança**. As **20 de "Líder/Vice-líder de ..."** saíram da lista (`ministerial_role.active`): a liderança vem do cadastro de **Ministérios** e aparece no formulário só para ler. Quem já tinha uma delas continua ligado (histórico). Corrigido junto: salvar pelo formulário apagava as funções do membro. **Conferir com a secretária:** no banco local, Reginaldo tem a função "Vice-líder Ministério Multimídia", mas o ministério de Multimídia não tem vice cadastrado (ele é vice do Louvor).
 
+## Crianças e Adolescentes
+
+Decidido em 2026-11-24 (detalhes em [docs/PESSOAS_E_FAMILIA.md](docs/PESSOAS_E_FAMILIA.md), seção 0): cadastro próprio, de 0 a 17 anos, só com pelo menos um **responsável membro** (com grau de parentesco); ministério opcional e compatível com a idade (faixa no próprio ministério: Soldadinhos de Cristo 3–10, Projeto Aviva 11–17); "Tornar membro" migra para o cadastro de pessoas.
+
+- **Etapa 1:** faixa de idade nos ministérios; ministério novo **Projeto Aviva** (Ministério de Adolescentes); líder e vice-líder só com 18 anos ou mais.
+- **Etapa 2:** cadastro de Crianças e Adolescentes (Secretaria > Crianças): lista, formulário, responsáveis (sugere o cônjuge vinculado), ministério pela idade.
+- **Etapa 3:** **notificações** (ver abaixo).
+- **Etapa 4:** "Tornar membro"; ficha do membro com menos de 18 mostra os responsáveis.
+- **Etapa 5:** card "Crianças" e aniversariantes com o cadastro novo; busca rápida; relatório por ministério com a idade na data do evento (ex.: Dia das Crianças).
+- **Depois:** saúde (alergias, medicamentos), autorização de imagem e de retirada (conversar com a secretaria).
+
+## Notificações
+
+O sino da barra superior abre a tela **Notificações**. Decidido em 2026-11-24:
+- **Calculadas** pela API a partir dos dados (`GET /api/v1/notifications`), num formato padrão (tipo, título, mensagem, data, igreja, para onde leva). Cada regra é uma classe; somem quando a situação é resolvida. O app busca ao entrar, ao voltar à tela inicial e a cada 15 minutos; o sino mostra o número.
+- **Quem vê:** Secretaria e Administrador, nas igrejas do alcance.
+- **Dispensar:** a secretaria pode dispensar (fica registrado quem e quando).
+- **Primeiras:** criança fez 3 anos sem ministério; fez 11 no Soldadinhos de Cristo; fez 18 sem virar membro; cadastros duplicados a juntar; cônjuges a revisar.
+- **Ideia para depois:** push (notificação do Windows ou do app mobile).
+
 ## Relatórios & Documentos
 
 ### Pedidos de oração para o vaso de oração
@@ -122,7 +142,6 @@ Regras decididas:
 **A fazer:**
 - **"Marcar no vaso" deve imprimir:** ao marcar (selecionados ou todos), gerar a impressão dos pedidos para o vaso de oração (por igreja, respeitando a igreja em uso). Depende dos relatórios (FEAT-5 no TASKS); hoje a marcação é só de situação e a impressão é feita por fora.
 - **App mobile da comunidade:** usar o envio público (`POST /api/v1/public/prayer-requests` e `GET /api/v1/public/churches`). Já existe, mas **desligado** (`echurch.public-prayer-requests.enabled=false`; ligado só no perfil dev). Antes de ligar em produção, avaliar proteção extra contra spam (captcha ou verificação no app), além do limite de 5 envios por IP a cada 15 minutos.
-- Painel inicial: o card "Pedidos de Oração" e os "Últimos Registros" com os dados reais (FEAT-6).
 - Limpar os 1.817 registros antigos do site (spam) quando não precisar mais deles para testar o layout.
 
 ---

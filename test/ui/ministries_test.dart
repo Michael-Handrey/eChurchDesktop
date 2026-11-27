@@ -181,7 +181,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Cadastrar'));
     await tester.runAsync(pumpEventQueue);
     await tester.pumpAndSettle();
-    expect(repository.saved.single.$2, (type: 'Círculo de Oração', name: 'Águas Cristalinas', churchId: 1, leaderId: null, viceLeaderId: null));
+    expect(repository.saved.single.$2, (type: 'Círculo de Oração', name: 'Águas Cristalinas', churchId: 1, leaderId: null, viceLeaderId: null, minAge: null, maxAge: null));
     expect(find.text('Ministério cadastrado.'), findsOneWidget);
   });
 
@@ -246,5 +246,35 @@ void main() {
     expect(const MinistryCandidate(id: 1, name: 'A', role: 'DIÁCONO', church: 'Sede').details, 'DIÁCONO · Sede');
     expect(const MinistryCandidate(id: 1, name: 'A', church: 'Sede').details, 'Sede');
     expect(const MinistryCandidate(id: 1, name: 'A').details, isNull);
+  });
+
+  testWidgets('faixa de idade: aparece na lista e o formulário pede as duas idades (0 a 17)', (tester) async {
+    final viewModel = await pumpScreen(tester, _secretaria);
+    repository.stored = [...repository.stored, const Ministry(id: 5, type: 'Ministério Infantil', name: 'Soldadinhos de Cristo', churchId: 1, minAge: 3, maxAge: 10)];
+    await tester.runAsync(viewModel.load.execute);
+    await tester.pumpAndSettle();
+    expect(find.text('3 a 10 anos'), findsOneWidget);
+
+    await tester.tap(find.text('Novo ministério'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Nome *'), 'Projeto Aviva');
+    await tester.enterText(find.widgetWithText(TextField, 'Tipo *'), 'Ministério de Adolescentes');
+    await tester.enterText(find.byKey(const ValueKey('ministry-min-age')), '11');
+    await tester.pump();
+    FilledButton save() => tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Cadastrar'));
+    expect(find.text('Informe as duas idades, ou nenhuma.'), findsOneWidget);
+    expect(save().onPressed, isNull);
+
+    await tester.enterText(find.byKey(const ValueKey('ministry-max-age')), '18');
+    await tester.pump();
+    expect(find.text('De 0 a 17 anos, com a mínima até a máxima.'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const ValueKey('ministry-max-age')), '17');
+    await tester.pump();
+    expect(save().onPressed, isNotNull);
+    await tester.tap(find.widgetWithText(FilledButton, 'Cadastrar'));
+    await tester.runAsync(pumpEventQueue);
+    await tester.pumpAndSettle();
+    expect(repository.saved.single.$2, (type: 'Ministério de Adolescentes', name: 'Projeto Aviva', churchId: 1, leaderId: null, viceLeaderId: null, minAge: 11, maxAge: 17));
   });
 }

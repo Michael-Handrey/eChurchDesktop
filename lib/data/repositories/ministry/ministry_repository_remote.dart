@@ -15,7 +15,7 @@ class MinistryRepositoryRemote({required final MinistryApi _api}) implements Min
 
   @override
   Future<Result<Ministry>> save(int? id, MinistryDraft draft) => _guard(() async {
-    final input = MinistryInput(defaultName: draft.type.trim(), name: draft.name.trim(), churchId: draft.churchId, leaderId: draft.leaderId, viceLeaderId: draft.viceLeaderId);
+    final input = MinistryInput(defaultName: draft.type.trim(), name: draft.name.trim(), churchId: draft.churchId, leaderId: draft.leaderId, viceLeaderId: draft.viceLeaderId, minAge: draft.minAge, maxAge: draft.maxAge);
     return _toDomain(id == null ? await _api.create(input) : await _api.update(id, input));
   });
 
@@ -53,6 +53,8 @@ class MinistryRepositoryRemote({required final MinistryApi _api}) implements Min
     memberCount: model.memberCount ?? 0,
     active: model.active ?? true,
     canEditMembers: model.canEditMembers ?? false,
+    minAge: model.minAge,
+    maxAge: model.maxAge,
   );
 
   Future<Result<T>> _guard<T>(Future<T> Function() call) async {

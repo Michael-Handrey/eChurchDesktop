@@ -18,11 +18,13 @@ class const MinistryApiModel({
   final int? memberCount,
   final bool? active,
   final bool? canEditMembers,
+  final int? minAge,
+  final int? maxAge,
 }) extends Equatable {
   factory MinistryApiModel.fromJson(Map<String, dynamic> json) => _$MinistryApiModelFromJson(json);
 
   @override
-  List<Object?> get props => [id, defaultName, name, churchId, churchName, leaderId, leaderName, viceLeaderId, viceLeaderName, memberCount, active, canEditMembers];
+  List<Object?> get props => [id, defaultName, name, churchId, churchName, leaderId, leaderName, viceLeaderId, viceLeaderName, memberCount, active, canEditMembers, minAge, maxAge];
 }
 
 /// Membro para incluir no ministério (MinistryCandidateDTO).
@@ -36,11 +38,19 @@ class const MinistryCandidateApiModel({required final int id, final String? name
 
 /// Cadastrar ou editar (MinistryInputDTO).
 @JsonSerializable(createFactory: false)
-class const MinistryInput({required final String defaultName, required final String name, required final int churchId, final int? leaderId, final int? viceLeaderId}) extends Equatable {
+class const MinistryInput({
+  required final String defaultName,
+  required final String name,
+  required final int churchId,
+  final int? leaderId,
+  final int? viceLeaderId,
+  final int? minAge,
+  final int? maxAge,
+}) extends Equatable {
   Map<String, dynamic> toJson() => _$MinistryInputToJson(this);
 
   @override
-  List<Object?> get props => [defaultName, name, churchId, leaderId, viceLeaderId];
+  List<Object?> get props => [defaultName, name, churchId, leaderId, viceLeaderId, minAge, maxAge];
 }
 
 @JsonSerializable(createFactory: false)

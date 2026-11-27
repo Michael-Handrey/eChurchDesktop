@@ -10,6 +10,7 @@ import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/members/form/widgets/form_fields.dart';
 import 'package:echurch_desktop/ui/members/widgets/member_status_chip.dart';
 import 'package:echurch_desktop/ui/ministries/ministries_viewmodel.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -166,6 +167,7 @@ class const _Table({
             const DataColumn(label: Text('Tipo'), columnWidth: FlexColumnWidth(3)),
             const DataColumn(label: Text('Líder'), columnWidth: FlexColumnWidth(3)),
             const DataColumn(label: Text('Vice-líder'), columnWidth: FlexColumnWidth(3)),
+            const DataColumn(label: Text('Faixa de idade'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(130), IntrinsicColumnWidth())),
             const DataColumn(label: Text('Membros'), headingRowAlignment: .center, columnWidth: MaxColumnWidth(FixedColumnWidth(100), IntrinsicColumnWidth())),
             DataColumn(label: const Text(''), columnWidth: MaxColumnWidth(FixedColumnWidth(viewModel.canManage ? 380 : 140), const IntrinsicColumnWidth())),
           ],
@@ -187,6 +189,7 @@ class const _Table({
                   DataCell(text(ministry.type, muted: true)),
                   DataCell(text(ministry.leaderName, muted: !ministry.active)),
                   DataCell(text(ministry.viceLeaderName, muted: !ministry.active)),
+                  DataCell(Center(child: text(ministry.ageRangeLabel, muted: true))),
                   DataCell(Center(child: text('${ministry.memberCount}'))),
                   DataCell(
                     Row(
@@ -238,27 +241,45 @@ class _MinistryFormDialogState extends State<MinistryFormDialog> {
   late int? _churchId = widget.ministry?.churchId ?? widget.viewModel.churchId;
   late SpouseOption? _leader = widget.ministry?.leaderId == null ? null : SpouseOption(id: widget.ministry!.leaderId, name: widget.ministry!.leaderName ?? '');
   late SpouseOption? _vice = widget.ministry?.viceLeaderId == null ? null : SpouseOption(id: widget.ministry!.viceLeaderId, name: widget.ministry!.viceLeaderName ?? '');
+  late final _minAge = TextEditingController(text: widget.ministry?.minAge?.toString() ?? '');
+  late final _maxAge = TextEditingController(text: widget.ministry?.maxAge?.toString() ?? '');
   String? _error;
 
-  bool get _valid => _type.text.trim().isNotEmpty && _name.text.trim().isNotEmpty && _churchId != null;
+  int? get _min => int.tryParse(_minAge.text.trim());
+  int? get _max => int.tryParse(_maxAge.text.trim());
+
+  /// Faixa de idade: as duas ou nenhuma, de 0 a 17, a mínima até a máxima (nulo = ok).
+  String? get _ageError {
+    if (_minAge.text.trim().isEmpty && _maxAge.text.trim().isEmpty) return null;
+    final (min, max) = (_min, _max);
+    if (min == null || max == null) return 'Informe as duas idades, ou nenhuma.';
+    if (min < 0 || max > 17 || min > max) return 'De 0 a 17 anos, com a mínima até a máxima.';
+    return null;
+  }
+
+  bool get _valid => _type.text.trim().isNotEmpty && _name.text.trim().isNotEmpty && _churchId != null && _ageError == null;
 
   @override
   void initState() {
     super.initState();
     _type.addListener(() => setState(() {}));
     _name.addListener(() => setState(() {}));
+    _minAge.addListener(() => setState(() {}));
+    _maxAge.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _type.dispose();
     _name.dispose();
+    _minAge.dispose();
+    _maxAge.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     final command = widget.viewModel.save;
-    await command.execute((id: widget.ministry?.id, draft: (type: _type.text, name: _name.text, churchId: _churchId!, leaderId: _leader?.id, viceLeaderId: _vice?.id)));
+    await command.execute((id: widget.ministry?.id, draft: (type: _type.text, name: _name.text, churchId: _churchId!, leaderId: _leader?.id, viceLeaderId: _vice?.id, minAge: _min, maxAge: _max)));
     final result = command.result;
     command.clearResult();
     if (!mounted) return;
@@ -336,7 +357,37 @@ class _MinistryFormDialogState extends State<MinistryFormDialog> {
                 ),
                 _person('Líder', _leader, (value) => setState(() => _leader = value)),
                 _person('Vice-líder', _vice, (value) => setState(() => _vice = value)),
-                const Text('O líder e o vice-líder entram como membros do ministério.', style: TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+                const Text('O líder e o vice-líder (18 anos ou mais) entram como membros do ministério.', style: TextStyle(color: AppColors.textMuted, fontSize: 12.5)),
+                Row(
+                  crossAxisAlignment: .start,
+                  spacing: 12,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        key: const ValueKey('ministry-min-age'),
+                        controller: _minAge,
+                        enabled: !running,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(2)],
+                        decoration: formDecoration('Idade mínima', error: _ageError),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        key: const ValueKey('ministry-max-age'),
+                        controller: _maxAge,
+                        enabled: !running,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(2)],
+                        decoration: formDecoration('Idade máxima'),
+                      ),
+                    ),
+                  ],
+                ),
+                const Text(
+                  'Faixa de idade: só para o cadastro de Crianças e Adolescentes (ex.: Soldadinhos de Cristo, 3 a 10). Vazia = sem faixa.',
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+                ),
                 if (_error case final message?) AppErrorBanner(message: message),
               ],
             ),

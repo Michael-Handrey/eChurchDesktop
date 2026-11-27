@@ -19,6 +19,8 @@ MinistryApiModel _$MinistryApiModelFromJson(Map<String, dynamic> json) => Minist
   memberCount: (json['memberCount'] as num?)?.toInt(),
   active: json['active'] as bool?,
   canEditMembers: json['canEditMembers'] as bool?,
+  minAge: (json['minAge'] as num?)?.toInt(),
+  maxAge: (json['maxAge'] as num?)?.toInt(),
 );
 
 MinistryCandidateApiModel _$MinistryCandidateApiModelFromJson(
@@ -37,6 +39,8 @@ Map<String, dynamic> _$MinistryInputToJson(MinistryInput instance) => <String, d
   'churchId': instance.churchId,
   'leaderId': instance.leaderId,
   'viceLeaderId': instance.viceLeaderId,
+  'minAge': instance.minAge,
+  'maxAge': instance.maxAge,
   'props': instance.props,
 };
 
