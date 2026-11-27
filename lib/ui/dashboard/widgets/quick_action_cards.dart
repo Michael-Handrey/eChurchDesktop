@@ -1,3 +1,4 @@
+import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
 import 'package:echurch_desktop/domain/models/dashboard/quick_stat.dart';
 import 'package:echurch_desktop/ui/core/theme/theme.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
@@ -15,7 +16,8 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
     final viewModel = context.read<DashboardViewModel>();
     final home = context.watch<HomeViewModel>();
 
-    // Crianças ainda sem tela: sem ação (e sem cursor de clique).
+    // Crianças: só Secretaria e Administrador abrem a tela (para os demais, o card só mostra o número).
+    final canManage = context.watch<AuthSessionNotifier>().user?.canManage ?? false;
     return Row(
       spacing: 20,
       children: [
@@ -37,7 +39,8 @@ class QuickActionCardsSectionWidget extends StatelessWidget {
             iconBgColor: AppColors.childrenBg,
             title: 'Crianças',
             description: 'Crianças e seus responsáveis.',
-            stat: home.statOf(QuickStatType.children) ?? const QuickStat(label: 'até 10 anos', type: QuickStatType.children),
+            stat: home.statOf(QuickStatType.children) ?? const QuickStat(label: 'cadastradas', type: QuickStatType.children),
+            onTap: canManage ? () => viewModel.openFromHome(DashboardViewModel.childrenNavItem) : null,
           ),
         ),
         Expanded(

@@ -33,7 +33,7 @@ class DashboardRepositoryRemote({required final DashboardApi _api}) implements D
         HomeData(
           stats: [
             QuickStat(label: 'membros ativos', count: data.stats?.activeMembers ?? 0, type: QuickStatType.members),
-            QuickStat(label: 'até 10 anos', count: data.stats?.children ?? 0, type: QuickStatType.children),
+            QuickStat(label: 'cadastradas', count: data.stats?.children ?? 0, type: QuickStatType.children),
             QuickStat(label: 'novos', count: data.stats?.newPrayers ?? 0, type: QuickStatType.prayers),
           ],
           birthdaysToday: [for (final item in data.birthdaysToday ?? const []) birthday(item)],

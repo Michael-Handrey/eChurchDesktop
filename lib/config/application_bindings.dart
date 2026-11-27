@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:echurch_desktop/data/repositories/child/child_repository.dart';
+import 'package:echurch_desktop/data/services/api/child_api.dart';
 import 'package:echurch_desktop/data/repositories/dashboard/dashboard_repository.dart';
 import 'package:echurch_desktop/data/services/api/dashboard_api.dart';
 import 'package:echurch_desktop/data/repositories/ministry/ministry_repository.dart';
@@ -96,6 +98,9 @@ class const ApplicationBindings({super.key, required final Widget child}) extend
 
         Provider(create: (context) => DashboardApi(context.read())),
         Provider<DashboardRepository>(create: (context) => DashboardRepositoryRemote(api: context.read())),
+
+        Provider(create: (context) => ChildApi(context.read())),
+        Provider<ChildRepository>(create: (context) => ChildRepositoryRemote(api: context.read())),
 
         Provider(create: (context) => MinistryApi(context.read())),
         Provider<MinistryRepository>(create: (context) => MinistryRepositoryRemote(api: context.read())),

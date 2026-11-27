@@ -125,12 +125,14 @@ class SidebarNavListWidget extends StatelessWidget {
                     isSelected: viewModel.selectedNavItem == DashboardViewModel.membersNavItem,
                     onTap: () => viewModel.selectNavItem(DashboardViewModel.membersNavItem),
                   ),
-                  SidebarSubmenuItemWidget(
-                    icon: Icons.face_outlined,
-                    label: 'Crianças',
-                    isSelected: viewModel.selectedNavItem == 'criancas',
-                    onTap: () => viewModel.selectNavItem('criancas'),
-                  ),
+                  // Crianças e Adolescentes: só Secretaria e Administrador (a API também recusa).
+                  if (user?.canManage ?? false)
+                    SidebarSubmenuItemWidget(
+                      icon: Icons.face_outlined,
+                      label: 'Crianças',
+                      isSelected: viewModel.selectedNavItem == DashboardViewModel.childrenNavItem,
+                      onTap: () => viewModel.selectNavItem(DashboardViewModel.childrenNavItem),
+                    ),
                 ],
                 SidebarSubmenuItemWidget(
                   icon: Icons.diversity_3_outlined,

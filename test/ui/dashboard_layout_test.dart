@@ -1,3 +1,4 @@
+import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
 import 'package:echurch_desktop/core/church/church_context_notifier.dart';
 import 'package:echurch_desktop/core/exceptions/app_exception.dart';
 import 'package:echurch_desktop/core/result.dart';
@@ -27,7 +28,7 @@ DateTime get _today {
 HomeData _data({List<Birthday>? today, List<Birthday>? next}) => HomeData(
   stats: const [
     QuickStat(label: 'membros ativos', count: 248, type: QuickStatType.members),
-    QuickStat(label: 'até 10 anos', count: 72, type: QuickStatType.children),
+    QuickStat(label: 'cadastradas', count: 72, type: QuickStatType.children),
     QuickStat(label: 'novos', count: 18, type: QuickStatType.prayers),
   ],
   birthdaysToday:
@@ -87,6 +88,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          ChangeNotifierProvider<AuthSessionNotifier>.value(value: session),
           ChangeNotifierProvider.value(value: navigation),
           ChangeNotifierProvider.value(value: home),
         ],
@@ -107,7 +109,7 @@ void main() {
     expect(find.text('248'), findsOneWidget);
     expect(find.text('membros ativos'), findsOneWidget);
     expect(find.text('72'), findsOneWidget);
-    expect(find.text('até 10 anos'), findsOneWidget);
+    expect(find.text('cadastradas'), findsOneWidget);
     expect(find.text('18'), findsOneWidget);
 
     for (final description in ['Cadastre e consulte os membros.', 'Crianças e seus responsáveis.', 'Registre e acompanhe os pedidos.']) {
@@ -188,7 +190,7 @@ void main() {
     expect(RecentActivity.timeAgo(DateTime(2026, 11, 10), now), '10/11/2026');
   });
 
-  testWidgets('cards de membros e de pedido de oração levam às telas e abrem a Secretaria no menu', (tester) async {
+  testWidgets('cards de membros, crianças e pedido de oração levam às telas e abrem a Secretaria no menu', (tester) async {
     await pumpHome(tester);
 
     await tester.tap(find.text('Pedido de Oração'));
@@ -201,7 +203,7 @@ void main() {
 
     navigation.selectNavItem('inicio');
     await tester.tap(find.text('Crianças'));
-    expect(navigation.selectedNavItem, 'inicio', reason: 'Crianças ainda sem tela');
+    expect(navigation.selectedNavItem, DashboardViewModel.childrenNavItem, reason: 'Secretaria abre Crianças e Adolescentes');
   });
 
   testWidgets('ninguém na semana: um aviso só, centralizado, e os painéis com a mesma altura', (tester) async {

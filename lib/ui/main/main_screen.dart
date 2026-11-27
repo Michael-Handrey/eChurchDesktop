@@ -1,4 +1,5 @@
 import 'package:echurch_desktop/core/auth/auth_session_notifier.dart';
+import 'package:echurch_desktop/ui/children/children_screen.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_screen.dart';
 import 'package:echurch_desktop/core/view_model_initializable.dart';
 import 'package:echurch_desktop/ui/dashboard/dashboard_viewmodel.dart';
@@ -52,6 +53,9 @@ class MainScreen extends StatelessWidget {
     }
     if (selected == DashboardViewModel.membersNavItem && canSeeMembers) {
       return MembersBindings(screenBuilder: (context) => MembersScreen(viewModel: context.read()));
+    }
+    if (selected == DashboardViewModel.childrenNavItem && (user?.canManage ?? false)) {
+      return ChildrenBindings(screenBuilder: (context) => ChildrenScreen(viewModel: context.read()));
     }
     if (selected == DashboardViewModel.ministriesNavItem) {
       return MinistriesBindings(screenBuilder: (context) => MinistriesScreen(viewModel: context.read()));

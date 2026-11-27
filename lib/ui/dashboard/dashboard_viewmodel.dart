@@ -6,6 +6,7 @@ class DashboardViewModel extends ChangeNotifier {
   static const usersNavItem = 'usuarios';
   static const membersNavItem = 'membros';
   static const ministriesNavItem = 'ministerios';
+  static const childrenNavItem = 'criancas';
   static const prayerRequestsNavItem = 'oracao';
 
   String _selectedNavItem = 'inicio';
@@ -26,7 +27,7 @@ class DashboardViewModel extends ChangeNotifier {
   /// Abre uma tela a partir da tela inicial (cards): seleciona o item e abre a seção dele no
   /// menu lateral, para o item aparecer marcado.
   void openFromHome(String itemKey) {
-    if (itemKey == prayerRequestsNavItem || itemKey == membersNavItem) _isSecretariaExpanded = true;
+    if (itemKey == prayerRequestsNavItem || itemKey == membersNavItem || itemKey == childrenNavItem) _isSecretariaExpanded = true;
     _selectedNavItem = itemKey;
     notifyListeners();
   }
